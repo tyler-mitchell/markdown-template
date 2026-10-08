@@ -30,7 +30,7 @@ Create a `.md` file in this directory with YAML frontmatter mapping package name
 
 ```markdown
 ---
-"package-name": minor
+'package-name': minor
 ---
 
 Added a new feature.
@@ -61,3 +61,33 @@ As a PR evolves, make sure its bump file stays in sync. If the scope of changes 
 - `*.md` (other than README.md) — pending bump files
 
 📖 Full documentation: https://bumpy.varlock.dev
+
+## Project conventions
+
+Follow `AGENTS.md` for this project's commands and release workflow. Use
+`pnpm run release:add -- ...` to create bumps. Record changes during development;
+do not reconstruct them from commits at release time.
+
+Maintain one bump per logical change and commit it with the implementation,
+tests, and consumer documentation.
+
+### Explain the consumer-visible change
+
+The body becomes a changelog entry. Explain what changes for someone using the
+package. Demonstrate it when an example communicates more clearly than prose:
+
+- Syntax or API changes: show before and after, with necessary migration steps.
+- New capabilities: show representative usage and its result.
+- Fixes: describe the affected case and corrected behavior.
+
+Use only the structure the change needs. A clear sentence can be sufficient;
+headings and code blocks are not mandatory.
+
+Examples must match the implementation and an executable test or fixture.
+Use real inputs and outputs. Avoid invented APIs, omitted load-bearing steps,
+and claims broader than the evidence. Link to evidence when useful, using a
+repository URL that remains valid from the generated changelog.
+
+Avoid file inventories, internal work logs, test counts, and claims such as
+"production ready." Bumpy checks release coverage; reviewers assess whether
+the description accurately explains the change.
