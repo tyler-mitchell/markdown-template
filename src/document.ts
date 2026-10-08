@@ -3,46 +3,70 @@ import { defineFileSystemStorage, getPath } from "package-management";
 import { getText } from "monogram/src/gen-parser.ts";
 import { evaluate, type Scope } from "./expression.ts";
 import { markdown, parse, type Element, type Part, type Syntax } from "./parse.ts";
+import type {
+  CompiledDocument,
+  CompileOptions,
+  InputName,
+  SelectedInput,
+  Part as DocumentPart,
+} from "./types.ts";
 
 function attributes({
   source,
   tree,
   scope,
-  schema,
+  context,
   only,
-}: Syntax & { scope: Scope; schema?: unknown; only?: string }): Scope {
+}: Syntax & { scope: Scope; context?: Scope; only?: string }): Scope {
   return Object.fromEntries(
     tree.children.flatMap((child) => {
       if (!("rule" in child) || child.rule !== "Attribute") return [];
       const [name, , value] = child.children;
       if (only && getText(name, source) !== only) return [];
       return [
-        [getText(name, source), value ? evaluate({ node: value, source, scope, schema }) : true],
+        [getText(name, source), value ? evaluate({ node: value, source, scope, context }) : true],
       ];
     }),
   );
 }
 
 /** Resolves the template directly to Markdown while retaining its authored source. */
-export function compile<Schema extends Module<Record<string, any>> = Module<Record<string, any>>>(
+export function compile<
+  Schema extends Module = Module<Record<string, unknown>>,
+  const Name extends InputName<Schema> | undefined = undefined,
+>(
   source: string,
+  options?: CompileOptions<Schema, Name>,
+): CompiledDocument<Schema, SelectedInput<Schema, Name>>;
+export function compile(
+  source: string,
+  options: CompileOptions<Module<Record<string, any>>, string> = {},
+): CompiledDocument {
+  return compileDocument(parse(source), options);
+}
+
+function compileDocument(
+  document: ReturnType<typeof parse>,
   {
     schema,
     input: inputName,
     includes = {},
   }: {
-    schema?: Schema;
-    input?: {
-      [Name in keyof NoInfer<Schema>]: Schema[Name] extends Type<any, any> ? Name : never;
-    }[keyof Schema] &
-      string;
+    schema?: Module<Record<string, any>>;
+    input?: string;
     includes?: Record<string, { render(values: Scope): string }>;
   } = {},
-) {
-  const document = parse(source);
-  const schemas = schema ?? type.module<Record<string, any>>(document.frontmatter.schema ?? {});
+): CompiledDocument {
+  const schemaScope = type.scope<Record<string, any>>(schema ?? document.frontmatter.schema ?? {});
+  const schemas = schema ?? schemaScope.export();
   const selectedInput = inputName ?? document.frontmatter.input;
-  const input = selectedInput ? schemas[selectedInput] : undefined;
+  const input = selectedInput === undefined ? undefined : schemas[selectedInput];
+  const context = { $schema: schemas, $frontmatter: document.frontmatter };
+  const optionalValues = Object.fromEntries(
+    input?.out
+      .select({ kind: "optional", boundary: "shallow" })
+      .map(({ key }) => [key, undefined]) ?? [],
+  );
 
   function text(offset: number, end: number, indent: number): string {
     const source = document.content.slice(offset, end);
@@ -69,7 +93,7 @@ export function compile<Schema extends Module<Record<string, any>> = Module<Reco
       const before = text(index ? parts[index - 1].end : offset, part.offset, indent);
       if (part.kind === "escape") return before + part.value;
       if (part.kind === "expression") {
-        const value = evaluate({ node: part.tree, source: part.source, scope, schema: schemas });
+        const value = evaluate({ node: part.tree, source: part.source, scope, context });
         return before + (value == null ? "" : String(value));
       }
       const padding = " ".repeat(Math.max(0, part.indent - indent));
@@ -79,7 +103,7 @@ export function compile<Schema extends Module<Record<string, any>> = Module<Reco
   }
 
   function renderElement(part: Element, scope: Scope): string {
-    const props = attributes({ ...part, scope, schema: schemas });
+    const props = attributes({ ...part, scope, context });
     const body = (values: Scope) =>
       resolve(part.children, values, part.bodyOffset, part.bodyEnd, part.bodyIndent);
     switch (part.name) {
@@ -91,33 +115,65 @@ export function compile<Schema extends Module<Record<string, any>> = Module<Reco
           .join("");
       case "match": {
         const branches = part.children.filter((child) => child.kind === "element");
-        const branch =
-          branches.find(
-            (child) =>
-              child.name === "case" &&
-              schemas[String(attributes({ ...child, scope, schema: schemas }).type)].allows(
-                props.value,
-              ),
-          ) ?? branches.find((child) => child.name === "default");
+        const matcher = schemaScope.match.in<unknown>();
+        branches
+          .filter((child) => child.name === "case")
+          .forEach((child) => {
+            matcher.case(
+              schemaScope.type.raw(attributes({ ...child, scope, context }).type) as Type<unknown>,
+              () => child,
+            );
+          });
+        const branch = matcher.default(() => branches.find((child) => child.name === "default"))(
+          props.value,
+        );
         return branch
           ? resolve(branch.children, scope, branch.bodyOffset, branch.bodyEnd, branch.bodyIndent)
           : "";
       }
-      case "include":
-        return includes[String(props.src)].render({ ...scope, ...(props.with as Scope) });
+      case "include": {
+        const content = includes[String(props.src)].render({ ...scope, ...(props.with as Scope) });
+        return part.inline ? content.replace(/\r?\n$/, "") : content;
+      }
       default:
         throw new Error(`Unknown document construct: ${part.name}`);
     }
   }
 
+  function publicPart(part: Part): DocumentPart {
+    if (part.kind === "escape") return part;
+    const { tree: _tree, ...node } = part;
+    if (node.kind === "element") {
+      return { ...node, children: node.children.map(publicPart) };
+    }
+    return node;
+  }
+
+  function renderValidated(values: unknown): string {
+    return resolve(
+      document.children,
+      { ...optionalValues, ...(values as Scope) },
+      0,
+      document.content.length,
+      0,
+    );
+  }
+
   return {
-    ...document,
+    source: document.source,
+    content: document.content,
+    contentOffset: document.source.length - document.content.length,
+    frontmatter: document.frontmatter,
+    children: document.children.map(publicPart),
     schemas,
     input,
+    standard: input?.["~standard"],
     render(values: Scope = {}) {
-      const scope = input ? (input.assert(values) as Scope) : values;
-      return resolve(document.children, scope, 0, document.content.length, 0);
+      return renderValidated(
+        selectedInput === undefined ? values : schemas[selectedInput].assert(values),
+      );
     },
+    renderValidated,
   };
 }
 
@@ -128,7 +184,7 @@ export async function load({
 }: {
   file: string;
   fileSystemStorage?: ReturnType<typeof defineFileSystemStorage>;
-}) {
+}): Promise<CompiledDocument & { readonly file: string }> {
   const path = getPath(["<cwd>", getPath({ to: file, startingFrom: "." })]);
   const storage =
     fileSystemStorage ??
@@ -138,19 +194,25 @@ export async function load({
   const base = storage.getFilePath("");
   const source = await storage.readFile(getPath({ to: path, startingFrom: base }));
   if (source === undefined) throw new Error(`Document not found: ${path}`);
-  const includes: Record<string, ReturnType<typeof compile>> = {};
-  const document = compile(source, { includes });
-  const pending = [...document.children];
+  const includes: Record<string, CompiledDocument> = {};
+  const parsed = parse(source);
+  const document = compileDocument(parsed, { includes });
+  const pending = [...parsed.children];
   for (const part of pending) {
     if (part.kind !== "element") continue;
     pending.push(...part.children);
     if (part.name === "include") {
-      const { src } = attributes({ ...part, scope: {}, schema: document.schemas, only: "src" });
+      const { src } = attributes({
+        ...part,
+        scope: {},
+        context: { $schema: document.schemas, $frontmatter: document.frontmatter },
+        only: "src",
+      });
       includes[String(src)] = await load({
         file: getPath({ to: ["<current_folder>", String(src)], from: path }),
         fileSystemStorage: storage,
       });
     }
   }
-  return document;
+  return { ...document, file: path };
 }

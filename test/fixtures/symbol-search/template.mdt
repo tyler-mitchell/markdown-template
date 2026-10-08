@@ -1,0 +1,14 @@
+---
+title: Workspace symbol search
+schema:
+  SearchResult:
+    count: number
+    anchor?: string
+    selected:
+      name: string
+      file: string
+input: SearchResult
+---
+Found {{ count }} symbols<$show if={anchor}> in `{{ anchor }}`</$show>.
+
+Selected: <$include src="./symbol.mdt" with={{symbol: selected}} />.

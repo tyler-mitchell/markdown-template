@@ -1,7 +1,7 @@
 import { program } from "cmd-mesh";
 import { defineFileSystemStorage } from "package-management";
 import { parse } from "../src/parse.ts";
-import { load } from "../src/document.ts";
+import { load } from "../src/index.ts";
 
 const fileSystemStorage = defineFileSystemStorage({ base: process.cwd() });
 const demo = program({

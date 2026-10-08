@@ -1,6 +1,6 @@
 import { expect, test } from "vite-plus/test";
 import { defineFileSystemStorage, getPath } from "package-management";
-import { load } from "../src/document.ts";
+import { load } from "../src/index.ts";
 
 const fixtures = defineFileSystemStorage({ base: getPath(["<cwd>", "test/fixtures"]) });
 const cases = (await fixtures.storage.getKeys())

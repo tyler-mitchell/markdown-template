@@ -7,21 +7,21 @@ export function evaluate({
   node,
   source,
   scope,
-  schema,
+  context = {},
 }: {
   node: CstChild;
   source: string;
   scope: Scope;
-  schema?: unknown;
+  context?: Scope;
 }): unknown {
   if ("rule" in node && node.rule === "AttributeValue") {
-    return evaluate({ node: node.children[0], source, scope, schema });
+    return evaluate({ node: node.children[0], source, scope, context });
   }
   if ("rule" in node && node.rule === "Interpolation") {
-    return evaluate({ node: node.children[2], source, scope, schema });
+    return evaluate({ node: node.children[2], source, scope, context });
   }
   if ("rule" in node && node.rule === "AttributeExpression") {
-    return evaluate({ node: node.children[1], source, scope, schema });
+    return evaluate({ node: node.children[1], source, scope, context });
   }
   const expression = getText(node, source);
   function identifiers(child: CstChild): string[] {
@@ -29,9 +29,9 @@ export function evaluate({
     return child.tokenType === "Ident" ? [getText(child, source)] : [];
   }
   const bindings = [...new Set(identifiers(node))].filter(
-    (name) => name === "$schema" || Object.hasOwn(scope, name),
+    (name) => Object.hasOwn(context, name) || Object.hasOwn(scope, name),
   );
   return new Function(...bindings, `"use strict"; return (${expression});`)(
-    ...bindings.map((name) => (name === "$schema" ? schema : scope[name])),
+    ...bindings.map((name) => (Object.hasOwn(context, name) ? context[name] : scope[name])),
   );
 }
