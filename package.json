@@ -1,6 +1,6 @@
 {
   "name": "markdown-template",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Markdown documents with schemas and declarative templates",
   "license": "MIT",
   "repository": {
