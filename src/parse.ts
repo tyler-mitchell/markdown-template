@@ -69,7 +69,7 @@ inline.inline.ruler.before("escape", "mdt_escape", (state, silent) => {
 });
 
 inline.inline.ruler.before("text", "mdt_expression", (state, silent) => {
-  if (state.src[state.pos] !== "{") return false;
+  if (!state.src.startsWith("{{", state.pos)) return false;
   const rest = state.src.slice(state.pos, state.posMax);
   const source = rest.slice(0, findEnd(rest, "}"));
   const syntax = { source, tree: parser.parse(source, "Interpolation") };

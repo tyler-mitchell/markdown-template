@@ -15,6 +15,8 @@ Stop the process with Ctrl+C in the terminal that started it.
 
 ## Health checks
 
+Run these checks after starting or restarting the service.
+
 ### Preview home page
 
 ```sh
@@ -26,4 +28,5 @@ Expected: HTTP 200 with the help-center home page.
 ## Escalation
 
 Contact **Developer Experience** in **#docs-tooling** about Documentation preview.
+Use this channel for service incidents and failed health checks.
 Include the failing check, its response, and the relevant logs.

@@ -39,3 +39,10 @@ const client = {
 ```
 
 The shell and JavaScript snippets read the token when the client runs.
+
+## Request timeout
+
+Maximum request duration in milliseconds.
+
+Default: 5000 ms.
+Configured value: 5000 ms.

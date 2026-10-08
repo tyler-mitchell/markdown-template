@@ -21,38 +21,38 @@ schema:
     name: string
     purpose: string
     deployment: Systemd | Local
-    checks: Check[]
+    checks: ["Check[]", "@", { description: "Run these checks after starting or restarting the service." }]
     onCall: Contact
 input: Runbook
 ---
-# {name}
+# {{name}}
 
-{purpose}
+{{purpose}}
 
 ## Start and stop
 
 <$match value={deployment}>
   <$case type="Systemd">
-    Unit: `{deployment.unit}` on `{deployment.host}`.
+    Unit: `{{deployment.unit}}` on `{{deployment.host}}`.
 
     ```sh
-    ssh "{deployment.host}" 'systemctl --user start "{deployment.unit}"'
-    ssh "{deployment.host}" 'systemctl --user status "{deployment.unit}"'
-    ssh "{deployment.host}" 'systemctl --user stop "{deployment.unit}"'
+    ssh "{{deployment.host}}" 'systemctl --user start "{{deployment.unit}}"'
+    ssh "{{deployment.host}}" 'systemctl --user status "{{deployment.unit}}"'
+    ssh "{{deployment.host}}" 'systemctl --user stop "{{deployment.unit}}"'
     ```
 
     Inspect recent logs before restarting a failing service:
 
     ```sh
-    ssh "{deployment.host}" 'journalctl --user -u "{deployment.unit}" -n 100 --no-pager'
+    ssh "{{deployment.host}}" 'journalctl --user -u "{{deployment.unit}}" -n 100 --no-pager'
     ```
   </$case>
   <$case type="Local">
-    Run from `{deployment.directory}`:
+    Run from `{{deployment.directory}}`:
 
     ```sh
-    cd "{deployment.directory}"
-    {deployment.command}
+    cd "{{deployment.directory}}"
+    {{deployment.command}}
     ```
 
     Stop the process with Ctrl+C in the terminal that started it.
@@ -61,14 +61,16 @@ input: Runbook
 
 ## Health checks
 
+{{$schema.Runbook.get("checks").meta.description}}
+
 <$each items={checks} as="check">
-  ### {check.name}
+  ### {{check.name}}
 
   ```sh
-  curl --fail --silent --show-error "{check.url}"
+  curl --fail --silent --show-error "{{check.url}}"
   ```
 
-  Expected: {check.expected}
+  Expected: {{check.expected}}
 
 </$each>
 <$include src="./shared/escalation.mdt" with={{serviceName: name, contact: onCall}} />

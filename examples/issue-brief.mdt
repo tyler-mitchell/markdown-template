@@ -19,25 +19,25 @@ schema:
     exclusions: string[]
 input: Issue
 ---
-# {title}
+# {{title}}
 
 ## Affected workflow
 
-{affectedWorkflow}
+{{affectedWorkflow}}
 
 ## User impact
 
-{impact}
+{{impact}}
 
 ## Evidence
 
 <$each items={evidence} as="item">
   <$match value={item}>
     <$case type="Observation">
-      - Observation: {item.detail}
+      - Observation: {{item.detail}}
     </$case>
     <$case type="Measurement">
-      - {item.detail}: {item.value} {item.unit}
+      - {{item.detail}}: {{item.value}} {{item.unit}}
     </$case>
   </$match>
 </$each>
@@ -50,14 +50,14 @@ input: Issue
 ## Acceptance criteria
 
 <$each items={acceptance} as="criterion">
-  - [ ] {criterion}
+  - [ ] {{criterion}}
 </$each>
 
 <$show if={exclusions.length > 0}>
   ## Outside this issue
 
   <$each items={exclusions} as="exclusion">
-    - {exclusion}
+    - {{exclusion}}
   </$each>
 </$show>
 

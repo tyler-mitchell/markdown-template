@@ -1,0 +1,5 @@
+{
+  "workspace": "support-preview",
+  "apiBase": "https://events.staging.example.com",
+  "includeVerification": true
+}

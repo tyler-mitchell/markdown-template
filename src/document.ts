@@ -1,28 +1,48 @@
-import { type } from "arktype";
+import { type, type Module, type Type } from "arktype";
 import { defineFileSystemStorage, getPath } from "package-management";
 import { getText } from "monogram/src/gen-parser.ts";
 import { evaluate, type Scope } from "./expression.ts";
 import { markdown, parse, type Element, type Part, type Syntax } from "./parse.ts";
 
-function attributes({ source, tree }: Syntax, scope: Scope, only?: string): Scope {
+function attributes({
+  source,
+  tree,
+  scope,
+  schema,
+  only,
+}: Syntax & { scope: Scope; schema?: unknown; only?: string }): Scope {
   return Object.fromEntries(
     tree.children.flatMap((child) => {
       if (!("rule" in child) || child.rule !== "Attribute") return [];
       const [name, , value] = child.children;
       if (only && getText(name, source) !== only) return [];
-      return [[getText(name, source), value ? evaluate({ node: value, source, scope }) : true]];
+      return [
+        [getText(name, source), value ? evaluate({ node: value, source, scope, schema }) : true],
+      ];
     }),
   );
 }
 
 /** Resolves the template directly to Markdown while retaining its authored source. */
-export function compile(
+export function compile<Schema extends Module<Record<string, any>> = Module<Record<string, any>>>(
   source: string,
-  includes: Record<string, { render(values: Scope): string }> = {},
+  {
+    schema,
+    input: inputName,
+    includes = {},
+  }: {
+    schema?: Schema;
+    input?: {
+      [Name in keyof NoInfer<Schema>]: Schema[Name] extends Type<any, any> ? Name : never;
+    }[keyof Schema] &
+      string;
+    includes?: Record<string, { render(values: Scope): string }>;
+  } = {},
 ) {
   const document = parse(source);
-  const schemas = type.module<Record<string, any>>(document.frontmatter.schema ?? {});
-  const input = document.frontmatter.input ? schemas[document.frontmatter.input] : undefined;
+  const schemas = schema ?? type.module<Record<string, any>>(document.frontmatter.schema ?? {});
+  const selectedInput = inputName ?? document.frontmatter.input;
+  const input = selectedInput ? schemas[selectedInput] : undefined;
 
   function text(offset: number, end: number, indent: number): string {
     const source = document.content.slice(offset, end);
@@ -49,7 +69,7 @@ export function compile(
       const before = text(index ? parts[index - 1].end : offset, part.offset, indent);
       if (part.kind === "escape") return before + part.value;
       if (part.kind === "expression") {
-        const value = evaluate({ node: part.tree, source: part.source, scope });
+        const value = evaluate({ node: part.tree, source: part.source, scope, schema: schemas });
         return before + (value == null ? "" : String(value));
       }
       const padding = " ".repeat(Math.max(0, part.indent - indent));
@@ -59,7 +79,7 @@ export function compile(
   }
 
   function renderElement(part: Element, scope: Scope): string {
-    const props = attributes(part, scope);
+    const props = attributes({ ...part, scope, schema: schemas });
     const body = (values: Scope) =>
       resolve(part.children, values, part.bodyOffset, part.bodyEnd, part.bodyIndent);
     switch (part.name) {
@@ -75,7 +95,9 @@ export function compile(
           branches.find(
             (child) =>
               child.name === "case" &&
-              schemas[String(attributes(child, scope).type)].allows(props.value),
+              schemas[String(attributes({ ...child, scope, schema: schemas }).type)].allows(
+                props.value,
+              ),
           ) ?? branches.find((child) => child.name === "default");
         return branch
           ? resolve(branch.children, scope, branch.bodyOffset, branch.bodyEnd, branch.bodyIndent)
@@ -117,13 +139,13 @@ export async function load({
   const source = await storage.readFile(getPath({ to: path, startingFrom: base }));
   if (source === undefined) throw new Error(`Document not found: ${path}`);
   const includes: Record<string, ReturnType<typeof compile>> = {};
-  const document = compile(source, includes);
+  const document = compile(source, { includes });
   const pending = [...document.children];
   for (const part of pending) {
     if (part.kind !== "element") continue;
     pending.push(...part.children);
     if (part.name === "include") {
-      const { src } = attributes(part, {}, "src");
+      const { src } = attributes({ ...part, scope: {}, schema: document.schemas, only: "src" });
       includes[String(src)] = await load({
         file: getPath({ to: ["<current_folder>", String(src)], from: path }),
         fileSystemStorage: storage,

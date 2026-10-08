@@ -20,6 +20,8 @@ ssh "support-staging" 'journalctl --user -u "support-portal.service" -n 100 --no
 
 ## Health checks
 
+Run these checks after starting or restarting the service.
+
 ### Application readiness
 
 ```sh
@@ -39,4 +41,5 @@ Expected: HTTP 200 after successfully reading the storage probe.
 ## Escalation
 
 Contact **Customer Platform** in **#support-platform-oncall** about Support portal.
+Use this channel for service incidents and failed health checks.
 Include the failing check, its response, and the relevant logs.

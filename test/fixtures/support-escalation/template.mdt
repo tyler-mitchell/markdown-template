@@ -15,24 +15,24 @@ schema:
     steps: string[] | Steps
 input: Ticket
 ---
-# {id}: {subject}
+# {{id}}: {{subject}}
 
-**Reported by:** {reporter}
+**Reported by:** {{reporter}}
 
 ## Customer report
 
-{report}
+{{report}}
 
 ## Reproduction
 
 <$each items={steps} as="step">
   <$match value={step}>
     <$case type="Step">
-      - {step.action}
-        - Expected: {step.expected}
+      - {{step.action}}
+        - Expected: {{step.expected}}
     </$case>
     <$default>
-      - {step}
+      - {{step}}
     </$default>
   </$match>
 </$each>

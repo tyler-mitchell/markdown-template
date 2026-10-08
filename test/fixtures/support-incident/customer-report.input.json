@@ -2,7 +2,7 @@
   "ticket": "SUP-418",
   "service": "Attachment storage",
   "reporter": "Maya Chen",
-  "report": "The diagnostic pasted {ticket} and <$show if={approved}> literally. Keep that text in the case.",
+  "report": "The diagnostic pasted {{ticket}} and <$show if={approved}> literally. Keep that text in the case.",
   "endpoint": "https://uploads.example.com/health",
   "steps": [
     {

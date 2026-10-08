@@ -22,7 +22,7 @@ input: Batch
 ---
 # Generate a coherent asset set
 
-Subject: **{subject}**.
+Subject: **{{subject}}**.
 
 Treat this as one coordinated request. The outputs represent the same subject.
 Use each supplied reference only for the role and instruction assigned to it.
@@ -30,30 +30,30 @@ Use each supplied reference only for the role and instruction assigned to it.
 ## Reference responsibilities
 
 <$each items={references} as="reference">
-  ### {reference.id} — {reference.role}
+  ### {{reference.id}} — {{reference.role}}
 
-  Source: {reference.url}
+  Source: {{reference.url}}
 
-  {reference.instruction}
+  {{reference.instruction}}
 
 </$each>
 ## What must remain consistent
 
 <$each items={invariants} as="invariant">
-  - {invariant}
+  - {{invariant}}
 </$each>
 
 ## Required outputs
 
 <$each items={outputs} as="output">
-  ### {output.name}
+  ### {{output.name}}
 
-  View: {output.view}.
+  View: {{output.view}}.
 
-  Downstream use: {output.purpose}
+  Downstream use: {{output.purpose}}
 
   <$each items={output.requirements} as="requirement">
-    - {requirement}
+    - {{requirement}}
   </$each>
 
 </$each>

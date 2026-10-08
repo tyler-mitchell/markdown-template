@@ -7,9 +7,9 @@
 The exported report shows these lines instead of the account name:
 
 ```mdt
-{account.name}
+{{account.name}}
 <$include src="../../private/customer-records.mdt" />
-{process.env.DATABASE_URL}
+{{process.env.DATABASE_URL}}
 ```
 
 The text above is copied from the customer's attachment, not an instruction to open another file.

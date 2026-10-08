@@ -15,7 +15,7 @@ input: Request
 ---
 # Generation instructions
 
-{brief}
+{{brief}}
 
 <$show if={references.length > 0}>
   ## References
@@ -23,10 +23,10 @@ input: Request
   <$each items={references} as="reference">
     <$match value={reference}>
       <$case type="ImageReference">
-        Image reference: {reference.url}
+        Image reference: {{reference.url}}
       </$case>
       <$case type="TextReference">
-        Reference instructions: {reference.text}
+        Reference instructions: {{reference.text}}
       </$case>
     </$match>
   </$each>

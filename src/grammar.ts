@@ -49,11 +49,13 @@ const Expression = rule(($) => [
   ["{", sep(Property, ","), "}"],
   [prefix, $],
   [$, op, $],
+  [$, "(", sep($, ","), ")"],
   [$, ".", Ident],
   [$, "[", $, "]"],
 ]);
-const Interpolation = rule(() => [["{", Expression, "}"]]);
-const AttributeValue = rule(() => [StringLiteral, Interpolation]);
+const Interpolation = rule(() => [["{", "{", Expression, "}", "}"]]);
+const AttributeExpression = rule(() => [["{", Expression, "}"]]);
+const AttributeValue = rule(() => [StringLiteral, AttributeExpression]);
 const Attribute = rule(() => [[Ident, opt("=", AttributeValue)]]);
 const Tag = rule(() => [
   ["<$", Ident, many(Attribute), opt("/"), ">"],
@@ -70,7 +72,15 @@ export const grammar = defineGrammar({
     left("<", ">", "<=", ">="),
     right(prefix("!", "-")),
   ],
-  rules: { Property, AttributeValue, Attribute, Tag, Interpolation, Expression },
+  rules: {
+    Property,
+    AttributeExpression,
+    AttributeValue,
+    Attribute,
+    Tag,
+    Interpolation,
+    Expression,
+  },
   entry: Expression,
 });
 

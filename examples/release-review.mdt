@@ -22,14 +22,14 @@ schema:
     blockers: string[]
 input: Release
 ---
-# Release review: {packageName} {version}
+# Release review: {{packageName}} {{version}}
 
 This document records evidence for review. It does not authorize publication.
 
 ## Consumer impact
 
 <$each items={consumers} as="consumer">
-  - {consumer}
+  - {{consumer}}
 </$each>
 
 ## Changes
@@ -39,14 +39,14 @@ This document records evidence for review. It does not authorize publication.
     <$case type="CompatibleChange">
       ### Compatible change
 
-      {change.summary}
+      {{change.summary}}
     </$case>
     <$case type="BreakingChange">
       ### Breaking change
 
-      {change.summary}
+      {{change.summary}}
 
-      **Required migration:** {change.migration}
+      **Required migration:** {{change.migration}}
     </$case>
   </$match>
 </$each>
@@ -54,9 +54,9 @@ This document records evidence for review. It does not authorize publication.
 ## Verification evidence
 
 <$each items={verification} as="check">
-  ### {check.name} — {check.status}
+  ### {{check.name}} — {{check.status}}
 
-  {check.evidence}
+  {{check.evidence}}
 
   <$show if={check.status !== "passed"}>
     This check does not establish release readiness.
@@ -67,7 +67,7 @@ This document records evidence for review. It does not authorize publication.
   ## Unresolved blockers
 
   <$each items={blockers} as="blocker">
-    - {blocker}
+    - {{blocker}}
   </$each>
 </$show>
 

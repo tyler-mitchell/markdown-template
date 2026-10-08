@@ -19,27 +19,27 @@ schema:
     restoredAt: ["string | null", "@", { default: null }]
 input: Incident
 ---
-# {id}: {service}
+# {{id}}: {{service}}
 
-**Status:** {status}
+**Status:** {{status}}
 
 ## Customer impact
 
-{impact}
+{{impact}}
 
 ## Timeline
 
 <$each items={timeline} as="event">
-  - **{event.time}** — {event.summary}
+  - **{{event.time}}** — {{event.summary}}
     <$each items={event.evidence} as="evidence">
-      - {evidence}
+      - {{evidence}}
     </$each>
 </$each>
 
 <$show if={status === "resolved"}>
   ## Recovery
 
-  Service was restored at {restoredAt}. Follow-up actions remain assigned below.
+  Service was restored at {{restoredAt}}. Follow-up actions remain assigned below.
 
 </$show>
 <$show if={status === "investigating"}>
@@ -52,5 +52,5 @@ input: Incident
 ## Assigned actions
 
 <$each items={actions} as="action">
-  - [ ] **{action.owner}:** {action.task}
+  - [ ] **{{action.owner}}:** {{action.task}}
 </$each>
