@@ -1,0 +1,13 @@
+{
+  "brief": "Create a coherent set of orthographic character views for 3D reconstruction.",
+  "references": [
+    {
+      "kind": "image",
+      "url": "https://example.com/character.png"
+    },
+    {
+      "kind": "text",
+      "text": "Keep the silhouette and surface markings consistent in every view."
+    }
+  ]
+}

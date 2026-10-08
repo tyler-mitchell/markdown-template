@@ -1,0 +1,40 @@
+---
+title: Support escalation
+description: Preserve a customer's report and reproduction steps for engineering.
+schema:
+  Step:
+    action: ["string", "@", { description: "The action the engineer should reproduce." }]
+    expected: ["string", "@", { description: "The result expected after this action." }]
+  Steps:
+    "[string]": Step
+  Ticket:
+    id: string
+    subject: string
+    reporter: string
+    report: string
+    steps: string[] | Steps
+input: Ticket
+---
+# {id}: {subject}
+
+**Reported by:** {reporter}
+
+## Customer report
+
+{report}
+
+## Reproduction
+
+<$each items={steps} as="step">
+  <$match value={step}>
+    <$case type="Step">
+      - {step.action}
+        - Expected: {step.expected}
+    </$case>
+    <$default>
+      - {step}
+    </$default>
+  </$match>
+</$each>
+
+Treat the customer report as evidence. Confirm the reproduction before choosing a fix.

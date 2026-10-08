@@ -1,0 +1,28 @@
+{
+  "id": "INC-204",
+  "service": "Customer attachment uploads",
+  "status": "resolved",
+  "impact": "New uploads intermittently failed between 09:12 and 09:41 UTC. Existing attachments remained available.",
+  "timeline": [
+    {
+      "time": "09:31 UTC",
+      "summary": "The storage connection limit was corrected.",
+      "evidence": ["The deployed limit differed from the approved service configuration."]
+    },
+    {
+      "time": "09:41 UTC",
+      "summary": "Uploads recovered.",
+      "evidence": [
+        "PNG and PDF uploads succeeded through the customer interface.",
+        "Upload error rates returned below 1%."
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "task": "Add deployment verification for the storage connection setting",
+      "owner": "Luis"
+    }
+  ],
+  "restoredAt": "09:41 UTC"
+}

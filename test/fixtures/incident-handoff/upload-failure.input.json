@@ -1,0 +1,34 @@
+{
+  "id": "INC-204",
+  "service": "Customer attachment uploads",
+  "status": "investigating",
+  "impact": "Customers can read existing attachments, but new uploads have returned errors since 09:12 UTC.",
+  "timeline": [
+    {
+      "time": "09:12 UTC",
+      "summary": "The upload error alert fired.",
+      "evidence": [
+        "The error rate increased from below 1% to 38%.",
+        "Existing attachment downloads continue to return HTTP 200."
+      ]
+    },
+    {
+      "time": "09:18 UTC",
+      "summary": "The on-call engineer reproduced the failure.",
+      "evidence": [
+        "A 120 KB PNG upload returned HTTP 503.",
+        "The matching server log reports a storage request timeout."
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "task": "Check storage latency and connection limits without deleting queued uploads",
+      "owner": "Priya"
+    },
+    {
+      "task": "Post a customer-facing status update and collect affected request IDs",
+      "owner": "Maya"
+    }
+  ]
+}

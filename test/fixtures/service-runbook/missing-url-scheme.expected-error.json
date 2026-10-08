@@ -1,0 +1,4 @@
+{
+  "name": "TraversalError",
+  "message": "checks[0].url must be a URL string (was \"support.staging.example.com/health\")"
+}

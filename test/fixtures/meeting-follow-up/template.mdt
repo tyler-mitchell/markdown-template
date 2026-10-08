@@ -1,0 +1,64 @@
+---
+title: Meeting follow-up
+description: Share agreed decisions and assigned work after a meeting.
+schema:
+  Decision:
+    summary: string
+    reason: string
+  Action:
+    task: string
+    owner: string
+    due: string
+  Blocker:
+    issue: string
+    owner: string
+    resolution: string
+  NextMeeting:
+    when: string
+    purpose: string
+  FollowUp:
+    topic: string
+    date: string
+    participants: string[]
+    decisions: Decision[]
+    actions: Action[]
+    blockers: ["Blocker[]", "@", { description: "Open issues requiring a decision or dependency." }]
+    nextMeeting: ["NextMeeting | null", "@", { default: null }]
+input: FollowUp
+---
+# {topic} — {date}
+
+## Attendees
+
+<$each items={participants} as="participant">
+  - {participant}
+</$each>
+
+## Decisions
+
+<$each items={decisions} as="decision">
+  - **{decision.summary}** {decision.reason}
+</$each>
+
+## Action items
+
+<$each items={actions} as="action">
+  - [ ] {action.task} — **{action.owner}**, due {action.due}.
+</$each>
+
+<$show if={blockers.length > 0}>
+  ## Blockers
+
+  <$each items={blockers} as="blocker">
+    - **{blocker.issue}** {blocker.owner}: {blocker.resolution}
+  </$each>
+
+</$show>
+<$show if={nextMeeting !== null}>
+  ## Next meeting
+
+  {nextMeeting.when}: {nextMeeting.purpose}
+</$show>
+<$show if={nextMeeting === null}>
+  No follow-up meeting is scheduled. Track progress against the action items above.
+</$show>

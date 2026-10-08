@@ -1,0 +1,30 @@
+{
+  "ticket": "SUP-418",
+  "service": "Attachment storage",
+  "reporter": "Maya Chen",
+  "report": "The diagnostic pasted {ticket} and <$show if={approved}> literally. Keep that text in the case.",
+  "endpoint": "https://uploads.example.com/health",
+  "steps": [
+    {
+      "action": "Retry the failed upload",
+      "observations": [
+        "The first request returned HTTP 503.",
+        "The retry reached the same storage node."
+      ]
+    },
+    {
+      "action": "Inspect the storage health endpoint",
+      "observations": []
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "verified",
+      "detail": "The storage node rejected both requests."
+    },
+    {
+      "kind": "pending",
+      "command": "curl --fail https://uploads.example.com/health"
+    }
+  ]
+}

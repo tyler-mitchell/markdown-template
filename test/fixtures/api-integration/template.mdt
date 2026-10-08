@@ -1,0 +1,51 @@
+---
+title: Event ingestion integration
+description: Show the request payload, shell command, and client configuration for an event API.
+schema:
+  Integration:
+    apiBase: string.url
+    workspace: string
+    timeoutMs: ["number", "@", { default: 5000, description: "Maximum request duration in milliseconds." }]
+input: Integration
+---
+# Event ingestion for {workspace}
+
+Send requests to `{apiBase}/events`. Store the API token in the `API_TOKEN`
+environment variable rather than in the request file.
+
+## Request body
+
+Save this as `event.json`:
+
+```json
+\{
+  "workspace": "{workspace}",
+  "event": "document.created",
+  "metadata": \{
+    "source": "desktop"
+  \}
+\}
+```
+
+## Send the request
+
+```sh
+curl --fail-with-body "{apiBase}/events" \
+  -H "Authorization: Bearer $\{API_TOKEN\}" \
+  -H "Content-Type: application/json" \
+  --data-binary @event.json
+```
+
+## JavaScript client configuration
+
+```js
+const client = \{
+  baseUrl: "{apiBase}",
+  timeoutMs: {timeoutMs},
+  headers: \{
+    authorization: `Bearer $\{process.env.API_TOKEN\}`
+  \}
+\};
+```
+
+The shell and JavaScript snippets read the token when the client runs.

@@ -1,0 +1,39 @@
+---
+title: Reference-guided generation
+schema:
+  ImageReference:
+    kind: "'image'"
+    url: ["string.url", "@", { description: "Reference image address." }]
+  TextReference:
+    kind: "'text'"
+    text: string
+  Request:
+    brief: string
+    references: "(ImageReference | TextReference)[]"
+    includeGuide: ["boolean", "@", { default: true }]
+input: Request
+---
+# Generation instructions
+
+{brief}
+
+<$show if={references.length > 0}>
+  ## References
+
+  <$each items={references} as="reference">
+    <$match value={reference}>
+      <$case type="ImageReference">
+        Image reference: {reference.url}
+      </$case>
+      <$case type="TextReference">
+        Reference instructions: {reference.text}
+      </$case>
+    </$match>
+  </$each>
+</$show>
+
+<$show if={includeGuide}>
+  Fill the supplied guide's labeled cells. Keep each result within its cell.
+</$show>
+
+<$include src="./shared/consistency.mdt" />

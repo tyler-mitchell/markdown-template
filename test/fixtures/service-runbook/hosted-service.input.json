@@ -1,0 +1,25 @@
+{
+  "name": "Support portal",
+  "purpose": "Hosts the customer support inbox and attachment browser.",
+  "deployment": {
+    "kind": "systemd",
+    "host": "support-staging",
+    "unit": "support-portal.service"
+  },
+  "checks": [
+    {
+      "name": "Application readiness",
+      "url": "https://support.staging.example.com/health",
+      "expected": "HTTP 200 with a ready status and a connected database."
+    },
+    {
+      "name": "Attachment storage",
+      "url": "https://support.staging.example.com/health/storage",
+      "expected": "HTTP 200 after successfully reading the storage probe."
+    }
+  ],
+  "onCall": {
+    "team": "Customer Platform",
+    "channel": "#support-platform-oncall"
+  }
+}

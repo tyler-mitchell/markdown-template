@@ -1,0 +1,98 @@
+{
+  "name": "markdown-template",
+  "version": "0.0.0",
+  "description": "Markdown documents with schemas and declarative templates",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tyler-mitchell/markdown-template.git"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "check": "vp check && vp test",
+    "test": "vp test",
+    "demo": "tsx examples/grammar.ts",
+    "build": "vp pack",
+    "prepack": "pnpm run build",
+    "dependencies:close": "gh pr close",
+    "dependencies:list": "gh pr list --state open --search 'author:app/dependabot' --limit 100",
+    "dependencies:merge": "gh pr merge --squash",
+    "dependencies:sync": "git pull --ff-only origin main",
+    "ci:cancel": "gh run cancel",
+    "ci:dispatch": "gh workflow run ci.yml",
+    "ci:list": "gh run list --limit 10",
+    "ci:logs": "gh run view --log-failed",
+    "ci:rerun": "gh run rerun",
+    "ci:watch": "gh run watch --exit-status",
+    "release:add": "bumpy add",
+    "release:check": "bumpy check --strict",
+    "release:merge": "gh pr merge bumpy/version-packages --auto --squash",
+    "release:pr": "gh pr list --head bumpy/version-packages --base release --state open --limit 1",
+    "release:promote:create": "gh pr create --head main --base release --fill",
+    "release:promote:merge": "gh pr merge main --merge --auto",
+    "release:promote:pr": "gh pr list --head main --base release --state open --limit 1",
+    "release:publish-and-trust-new-package": "npm whoami || npm login && fledgling add markdown-template --new",
+    "release:push": "git push origin main",
+    "release:registry-version": "npm view markdown-template version",
+    "release:sync": "git pull --ff-only origin release",
+    "release:sync:merge": "git pull --no-rebase --no-edit origin release",
+    "release:sync:push": "git push origin main",
+    "release:trust-sync": "fledgling sync",
+    "release:status": "bumpy status --json",
+    "release:update": "gh pr update-branch bumpy/version-packages",
+    "release:preflight": "node scripts/verify-package.ts",
+    "release:verify": "node scripts/verify-release.ts",
+    "setup:bumpy": "bumpy ci setup",
+    "setup:bumpy:secrets": "gh secret list --json name --jq '.[].name'",
+    "setup:bumpy:token": "gh auth token | gh secret set BUMPY_GH_TOKEN",
+    "setup:base-branch": "git push origin main:release",
+    "setup:branch-protection": "gh api --silent --method PUT repos/{owner}/{repo}/branches/release/protection --input .github/branch-protection.json",
+    "setup:repository:create": "gh repo create tyler-mitchell/markdown-template --public --source=. --remote=origin",
+    "setup:repository": "gh api --silent --method PATCH repos/{owner}/{repo} --field allow_auto_merge=true --field allow_update_branch=true --field delete_branch_on_merge=true",
+    "workflow:check": "go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12 .github/workflows/*.yml"
+  },
+  "dependencies": {
+    "arktype": "2.2.7",
+    "gray-matter": "^4.0.3",
+    "markdown-it": "^15.0.2",
+    "monogram": "github:johnsoncodehk/monogram#8c489e29e000fbfd886fb89ecf2cfcc94bde38b6",
+    "package-management": "0.1.0"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/core": "^0.18.5",
+    "@types/node": "^26.6.4",
+    "@varlock/bumpy": "1.18.1",
+    "cmd-mesh": "^0.5.0",
+    "fledgling": "1.2.1",
+    "npm": "^11.21.0",
+    "publint": "^0.3.25",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vite-plus": "^1.1.0"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "pnpm@11.5.2",
+  "fledgling": {
+    "provider": "github",
+    "workflow": "release.yml",
+    "environment": "publish",
+    "permissions": "publish"
+  }
+}

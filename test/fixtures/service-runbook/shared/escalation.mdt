@@ -1,0 +1,13 @@
+---
+schema:
+  Escalation:
+    serviceName: string
+    contact:
+      team: string
+      channel: string
+input: Escalation
+---
+## Escalation
+
+Contact **{contact.team}** in **{contact.channel}** about {serviceName}.
+Include the failing check, its response, and the relevant logs.

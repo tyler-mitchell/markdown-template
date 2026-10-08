@@ -1,0 +1,64 @@
+---
+title: Evidence-based issue brief
+description: Turn observations into a scoped issue without inventing a diagnosis.
+schema:
+  Observation:
+    kind: "'observation'"
+    detail: string
+  Measurement:
+    kind: "'measurement'"
+    detail: string
+    value: number
+    unit: string
+  Issue:
+    title: string
+    affectedWorkflow: string
+    impact: string
+    evidence: "(Observation | Measurement)[]"
+    acceptance: string[]
+    exclusions: string[]
+input: Issue
+---
+# {title}
+
+## Affected workflow
+
+{affectedWorkflow}
+
+## User impact
+
+{impact}
+
+## Evidence
+
+<$each items={evidence} as="item">
+  <$match value={item}>
+    <$case type="Observation">
+      - Observation: {item.detail}
+    </$case>
+    <$case type="Measurement">
+      - {item.detail}: {item.value} {item.unit}
+    </$case>
+  </$match>
+</$each>
+
+<$show if={evidence.length === 0}>
+  No supporting evidence was supplied. Capture a representative invocation before
+  claiming a root cause or an improvement.
+</$show>
+
+## Acceptance criteria
+
+<$each items={acceptance} as="criterion">
+  - [ ] {criterion}
+</$each>
+
+<$show if={exclusions.length > 0}>
+  ## Outside this issue
+
+  <$each items={exclusions} as="exclusion">
+    - {exclusion}
+  </$each>
+</$show>
+
+Implementation choices remain open. Distinguish observations from inferred causes.

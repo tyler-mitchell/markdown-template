@@ -1,0 +1,32 @@
+{
+  "packageName": "@example/document-tools",
+  "version": "2.0.0",
+  "consumers": [
+    "The document editor that previews saved templates.",
+    "The CLI that renders release and issue briefs."
+  ],
+  "changes": [
+    {
+      "kind": "compatible",
+      "summary": "Add descriptions to fields already present in the template schema."
+    },
+    {
+      "kind": "breaking",
+      "summary": "Replace the single reference field with an ordered references collection.",
+      "migration": "Move the existing reference into a one-element references array and preserve its role and instructions."
+    }
+  ],
+  "verification": [
+    {
+      "name": "Existing template migration",
+      "status": "pending",
+      "evidence": "This example supplies no migration run. A representative saved template must be checked."
+    },
+    {
+      "name": "Editor and CLI output agreement",
+      "status": "pending",
+      "evidence": "This example supplies no comparison result. Both consumers must resolve the same authored inputs."
+    }
+  ],
+  "blockers": ["Confirm that migrated references retain their authored order and instructions."]
+}

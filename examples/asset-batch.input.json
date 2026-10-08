@@ -1,0 +1,58 @@
+{
+  "subject": "An articulated action figure for the crowd-navigation character pipeline",
+  "references": [
+    {
+      "id": "character-identity",
+      "url": "https://example.com/artifacts/character-identity.png",
+      "role": "identity",
+      "instruction": "Preserve the face, hair silhouette, clothing design, and color placement."
+    },
+    {
+      "id": "joint-construction",
+      "url": "https://example.com/artifacts/joint-construction.png",
+      "role": "construction",
+      "instruction": "Use this reference for joint placement and assembly boundaries, not character identity."
+    },
+    {
+      "id": "surface-reference",
+      "url": "https://example.com/artifacts/surface-reference.png",
+      "role": "materials",
+      "instruction": "Use the matte plastic finish. Do not copy this reference's markings or colors."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "whole-character",
+      "view": "Neutral front three-quarter view",
+      "purpose": "Review the identity and proportions before generating component meshes.",
+      "requirements": [
+        "Show the entire figure with separated limbs and an unobstructed silhouette.",
+        "Keep hands open and avoid accessories that hide the body."
+      ]
+    },
+    {
+      "name": "torso",
+      "view": "Straight front view of the isolated torso",
+      "purpose": "Provide a clean image input for Hunyuan3D torso reconstruction.",
+      "requirements": [
+        "Exclude the head, arms, and legs without inventing new clothing details.",
+        "Keep the neckline, waist boundary, and shoulder connections visible."
+      ]
+    },
+    {
+      "name": "head",
+      "view": "Neutral front three-quarter view of the isolated head",
+      "purpose": "Provide a separate Hunyuan3D input while retaining the approved identity.",
+      "requirements": [
+        "Preserve the whole-character face and hair shape.",
+        "Include the neck connection and avoid cropped hair."
+      ]
+    }
+  ],
+  "invariants": [
+    "All outputs depict the same figure; component requests do not authorize redesign.",
+    "Use a plain background and neutral lighting without a pedestal, props, or cast text.",
+    "Preserve the relative dimensions needed to assemble the components."
+  ],
+  "guide": true
+}

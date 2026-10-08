@@ -1,0 +1,74 @@
+---
+title: Service runbook
+description: Give an operator the correct commands and escalation contact for a service.
+schema:
+  Systemd:
+    kind: "'systemd'"
+    host: string
+    unit: string
+  Local:
+    kind: "'local'"
+    directory: string
+    command: string
+  Check:
+    name: string
+    url: string.url
+    expected: string
+  Contact:
+    team: string
+    channel: string
+  Runbook:
+    name: string
+    purpose: string
+    deployment: Systemd | Local
+    checks: Check[]
+    onCall: Contact
+input: Runbook
+---
+# {name}
+
+{purpose}
+
+## Start and stop
+
+<$match value={deployment}>
+  <$case type="Systemd">
+    Unit: `{deployment.unit}` on `{deployment.host}`.
+
+    ```sh
+    ssh "{deployment.host}" 'systemctl --user start "{deployment.unit}"'
+    ssh "{deployment.host}" 'systemctl --user status "{deployment.unit}"'
+    ssh "{deployment.host}" 'systemctl --user stop "{deployment.unit}"'
+    ```
+
+    Inspect recent logs before restarting a failing service:
+
+    ```sh
+    ssh "{deployment.host}" 'journalctl --user -u "{deployment.unit}" -n 100 --no-pager'
+    ```
+  </$case>
+  <$case type="Local">
+    Run from `{deployment.directory}`:
+
+    ```sh
+    cd "{deployment.directory}"
+    {deployment.command}
+    ```
+
+    Stop the process with Ctrl+C in the terminal that started it.
+  </$case>
+</$match>
+
+## Health checks
+
+<$each items={checks} as="check">
+  ### {check.name}
+
+  ```sh
+  curl --fail --silent --show-error "{check.url}"
+  ```
+
+  Expected: {check.expected}
+
+</$each>
+<$include src="./shared/escalation.mdt" with={{serviceName: name, contact: onCall}} />

@@ -1,0 +1,72 @@
+---
+title: Support incident brief
+description: Preserve a customer report and reproduction evidence for an on-call handoff.
+schema:
+  Step:
+    action: string
+    observations: string[]
+  Verified:
+    kind: "'verified'"
+    detail: string
+  Pending:
+    kind: "'pending'"
+    command: string
+  Brief:
+    ticket: string
+    service: string
+    reporter: string
+    report: string
+    endpoint: string.url
+    timeoutMs: ["number", "@", { default: 5000, description: "Maximum request duration in milliseconds." }]
+    steps: Step[]
+    evidence: "(Verified | Pending)[]"
+    followUp: ["string | null", "@", { default: null }]
+input: Brief
+---
+# {ticket}: {service}
+
+**Reported by:** {reporter}
+
+## Customer report
+
+{report}
+
+## Reproduce
+
+Run `curl --max-time {timeoutMs} "{endpoint}"`, then save the request context:
+
+```json
+\{"ticket": "{ticket}", "endpoint": "{endpoint}"\}
+```
+
+<$each items={steps} as="step">
+  ### {step.action}
+
+  <$each items={step.observations} as="observation">
+    - {observation}
+  </$each>
+</$each>
+
+## Evidence
+
+<$each items={evidence} as="item">
+  <$match value={item}>
+    <$case type="Verified">
+      - Verified: {item.detail}
+    </$case>
+    <$case type="Pending">
+      - Pending: `{item.command}`
+    </$case>
+  </$match>
+</$each>
+
+<$show if={followUp !== null}>
+  ## Next action
+
+  {followUp}
+</$show>
+<$show if={followUp === null}>
+  No follow-up action has been assigned.
+</$show>
+
+<$include src="./shared/footer.mdt" with={{ticket: ticket, service: service}} />

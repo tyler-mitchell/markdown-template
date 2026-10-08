@@ -1,0 +1,20 @@
+{
+  "name": "Support portal",
+  "purpose": "Hosts the customer support inbox and attachment browser.",
+  "deployment": {
+    "kind": "systemd",
+    "host": "support-staging",
+    "unit": "support-portal.service"
+  },
+  "checks": [
+    {
+      "name": "Application readiness",
+      "url": "support.staging.example.com/health",
+      "expected": "HTTP 200 with a ready status and a connected database."
+    }
+  ],
+  "onCall": {
+    "team": "Customer Platform",
+    "channel": "#support-platform-oncall"
+  }
+}

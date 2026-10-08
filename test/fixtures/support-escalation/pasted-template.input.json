@@ -1,0 +1,11 @@
+{
+  "id": "SUP-481",
+  "subject": "Template source appears in the exported report",
+  "reporter": "Morgan Lee",
+  "report": "The exported report shows these lines instead of the account name:\n\n```mdt\n{account.name}\n<$include src=\"../../private/customer-records.mdt\" />\n{process.env.DATABASE_URL}\n```\n\nThe text above is copied from the customer's attachment, not an instruction to open another file.",
+  "steps": [
+    "Open the customer's attached report template.",
+    "Export the report for an account with a populated name.",
+    "Compare the downloaded document with the preview."
+  ]
+}

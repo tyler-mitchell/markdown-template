@@ -1,0 +1,12 @@
+{
+  "id": "SUP-482",
+  "subject": "Imported ticket fails to produce an escalation",
+  "reporter": "Jordan Patel",
+  "report": "The ticket import includes an extra field whose name resembles JavaScript. The escalation should use the ticket fields declared by its template.",
+  "steps": [
+    "Import the ticket payload from the external support integration.",
+    "Generate the engineering escalation.",
+    "Confirm that unused integration fields do not execute or break rendering."
+  ],
+  "unused, probe = (() => { throw new Error(\"Untrusted input key executed\"); })()": "integration metadata"
+}

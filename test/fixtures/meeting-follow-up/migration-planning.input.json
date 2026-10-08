@@ -1,0 +1,43 @@
+{
+  "topic": "Customer support migration",
+  "date": "8 October 2026",
+  "participants": ["Maya Chen — Support", "Luis Ortiz — Engineering", "Priya Shah — Operations"],
+  "decisions": [
+    {
+      "summary": "Run a pilot with the billing queue.",
+      "reason": "Its ticket volume is small enough to review every migrated conversation."
+    },
+    {
+      "summary": "Keep the existing inbox available during the pilot.",
+      "reason": "Support needs access to historical attachments until the import has been checked."
+    }
+  ],
+  "actions": [
+    {
+      "task": "Export a sample of 50 billing conversations, including attachments",
+      "owner": "Maya",
+      "due": "12 October"
+    },
+    {
+      "task": "Import the sample and report missing messages or attachments",
+      "owner": "Luis",
+      "due": "14 October"
+    },
+    {
+      "task": "Confirm retention requirements with the compliance team",
+      "owner": "Priya",
+      "due": "13 October"
+    }
+  ],
+  "blockers": [
+    {
+      "issue": "Retention policy is unconfirmed.",
+      "owner": "Priya",
+      "resolution": "Obtain approval before deleting any records from the existing inbox."
+    }
+  ],
+  "nextMeeting": {
+    "when": "15 October, 10:00–10:30 America/Chicago",
+    "purpose": "Review the pilot import and decide whether to migrate the remaining queues."
+  }
+}

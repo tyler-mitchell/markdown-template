@@ -1,0 +1,17 @@
+{
+  "title": "Reduce noise in Devframe instance discovery",
+  "affectedWorkflow": "An agent discovers the running Agent Hub instance before invoking its tools.",
+  "impact": "The instance-list response occupies substantial context with information that is not needed to select an instance.",
+  "evidence": [
+    {
+      "kind": "observation",
+      "detail": "The user reported that Devframe connect list instances overwhelms the agent's context relative to the information needed."
+    }
+  ],
+  "acceptance": [
+    "The initial response makes the instance identity, connection state, and selection information easy to find.",
+    "Detailed metadata remains available through an explicit follow-up when needed.",
+    "Compare representative responses before and after the change rather than inventing a reduction metric."
+  ],
+  "exclusions": ["Changing the service tool contracts.", "Adding a second discovery catalogue."]
+}

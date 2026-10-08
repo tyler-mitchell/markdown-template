@@ -1,0 +1,70 @@
+---
+title: Consistent asset batch
+description: Prepare one generation request from several references and named outputs.
+schema:
+  Reference:
+    id: string
+    url: ["string.url", "@", { description: "The supplied artifact's image URL." }]
+    role: "'identity' | 'materials' | 'construction'"
+    instruction: string
+  Output:
+    name: string
+    view: string
+    purpose: string
+    requirements: string[]
+  Batch:
+    subject: string
+    references: Reference[]
+    outputs: Output[]
+    invariants: string[]
+    guide: ["boolean", "@", { default: false }]
+input: Batch
+---
+# Generate a coherent asset set
+
+Subject: **{subject}**.
+
+Treat this as one coordinated request. The outputs represent the same subject.
+Use each supplied reference only for the role and instruction assigned to it.
+
+## Reference responsibilities
+
+<$each items={references} as="reference">
+  ### {reference.id} — {reference.role}
+
+  Source: {reference.url}
+
+  {reference.instruction}
+
+</$each>
+## What must remain consistent
+
+<$each items={invariants} as="invariant">
+  - {invariant}
+</$each>
+
+## Required outputs
+
+<$each items={outputs} as="output">
+  ### {output.name}
+
+  View: {output.view}.
+
+  Downstream use: {output.purpose}
+
+  <$each items={output.requirements} as="requirement">
+    - {requirement}
+  </$each>
+
+</$each>
+<$show if={guide}>
+  The attached guide defines the output regions. Match the region labels to the
+  output names above. Preserve the guide's borders and keep each subject inside
+  its assigned region.
+
+</$show>
+<$show if={!guide}>
+  Return each named output as a separate image, using the same framing scale.
+
+</$show>
+<$include src="./shared/consistency.mdt" />

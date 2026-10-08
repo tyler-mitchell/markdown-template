@@ -1,0 +1,63 @@
+---
+title: Customer quote
+description: Present approved line items and payment terms to a customer.
+schema:
+  LineItem:
+    description: string
+    quantity: number
+    unitPrice: ["string", "@", { description: "Formatted amount from the quoting system." }]
+    total: ["string", "@", { description: "Approved line total, including quantity." }]
+  Invoice:
+    kind: "'invoice'"
+    dueDays: number
+  Prepaid:
+    kind: "'prepaid'"
+    paymentUrl: string.url
+  Quote:
+    number: string
+    supplier: string
+    customer: string
+    validUntil: string
+    items: LineItem[]
+    total: string
+    payment: Invoice | Prepaid
+    assumptions: string[]
+input: Quote
+---
+# Quote {number}
+
+| Detail | Value |
+| --- | --- |
+| Supplier | {supplier} |
+| Customer | {customer} |
+| Valid until | {validUntil} |
+
+## Scope and pricing
+
+| Item | Quantity | Unit price | Total |
+| --- | ---: | ---: | ---: |
+<$each items={items} as="item">
+  | {item.description} | {item.quantity} | {item.unitPrice} | {item.total} |
+</$each>
+
+**Total: {total}**
+
+## Payment
+
+<$match value={payment}>
+  <$case type="Invoice">
+    Payment is due within {payment.dueDays} days of the invoice date.
+  </$case>
+  <$case type="Prepaid">
+    [Pay securely]({payment.paymentUrl}) to confirm the booking.
+    Work is scheduled after payment is received.
+  </$case>
+</$match>
+<$show if={assumptions.length > 0}>
+
+  ## Scope assumptions
+
+  <$each items={assumptions} as="assumption">
+    - {assumption}
+  </$each>
+</$show>

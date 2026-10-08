@@ -1,0 +1,20 @@
+{
+  "id": "SUP-483",
+  "subject": "Attachment preview does not update after replacement",
+  "reporter": "Casey Nguyen",
+  "report": "Replacing a PDF attachment keeps the previous thumbnail until the ticket is reopened.",
+  "steps": {
+    "open-ticket": {
+      "action": "Open a ticket with an existing PDF attachment.",
+      "expected": "The attachment thumbnail matches the currently stored PDF."
+    },
+    "replace-file": {
+      "action": "Replace the attachment with a different PDF while keeping the ticket open.",
+      "expected": "The preview updates to show the replacement file."
+    },
+    "reopen-ticket": {
+      "action": "Close and reopen the ticket.",
+      "expected": "The same replacement preview remains visible."
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "number": "Q-2026-108",
+  "supplier": "Clearpath Design",
+  "customer": "Northline Research",
+  "validUntil": "23 October 2026",
+  "items": [
+    {
+      "description": "Remote keyboard-accessibility training, twelve attendees",
+      "quantity": 1,
+      "unitPrice": "$900.00",
+      "total": "$900.00"
+    }
+  ],
+  "total": "$900.00",
+  "payment": {
+    "kind": "prepaid",
+    "paymentUrl": "https://billing.example.com/quotes/Q-2026-108"
+  },
+  "assumptions": []
+}

@@ -1,0 +1,24 @@
+{
+  "topic": "Help center handoff",
+  "date": "9 October 2026",
+  "participants": ["Elena Park — Documentation", "Sam Rivera — Support"],
+  "decisions": [
+    {
+      "summary": "Support will own the troubleshooting articles.",
+      "reason": "The support team receives the customer reports that identify missing guidance."
+    }
+  ],
+  "actions": [
+    {
+      "task": "Transfer article ownership and share the editorial checklist",
+      "owner": "Elena",
+      "due": "12 October"
+    },
+    {
+      "task": "Review the ten most frequently linked troubleshooting articles",
+      "owner": "Sam",
+      "due": "16 October"
+    }
+  ],
+  "blockers": []
+}

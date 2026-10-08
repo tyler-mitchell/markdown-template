@@ -1,0 +1,77 @@
+---
+title: Package release review
+description: Review compatibility and verification evidence before a release decision.
+schema:
+  CompatibleChange:
+    kind: "'compatible'"
+    summary: string
+  BreakingChange:
+    kind: "'breaking'"
+    summary: string
+    migration: string
+  Verification:
+    name: string
+    status: "'passed' | 'failed' | 'pending'"
+    evidence: string
+  Release:
+    packageName: string
+    version: string
+    consumers: string[]
+    changes: "(CompatibleChange | BreakingChange)[]"
+    verification: Verification[]
+    blockers: string[]
+input: Release
+---
+# Release review: {packageName} {version}
+
+This document records evidence for review. It does not authorize publication.
+
+## Consumer impact
+
+<$each items={consumers} as="consumer">
+  - {consumer}
+</$each>
+
+## Changes
+
+<$each items={changes} as="change">
+  <$match value={change}>
+    <$case type="CompatibleChange">
+      ### Compatible change
+
+      {change.summary}
+    </$case>
+    <$case type="BreakingChange">
+      ### Breaking change
+
+      {change.summary}
+
+      **Required migration:** {change.migration}
+    </$case>
+  </$match>
+</$each>
+
+## Verification evidence
+
+<$each items={verification} as="check">
+  ### {check.name} — {check.status}
+
+  {check.evidence}
+
+  <$show if={check.status !== "passed"}>
+    This check does not establish release readiness.
+  </$show>
+</$each>
+
+<$show if={blockers.length > 0}>
+  ## Unresolved blockers
+
+  <$each items={blockers} as="blocker">
+    - {blocker}
+  </$each>
+</$show>
+
+<$show if={blockers.length === 0}>
+  No blockers were supplied. Review the verification evidence before making a
+  release decision; an empty blocker list is not proof of readiness.
+</$show>

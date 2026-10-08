@@ -1,0 +1,56 @@
+---
+title: Incident handoff
+description: Transfer incident status, evidence, and outstanding actions between responders.
+schema:
+  Event:
+    time: string
+    summary: string
+    evidence: string[]
+  Action:
+    task: string
+    owner: string
+  Incident:
+    id: string
+    service: string
+    status: "'investigating' | 'resolved'"
+    impact: string
+    timeline: Event[]
+    actions: Action[]
+    restoredAt: ["string | null", "@", { default: null }]
+input: Incident
+---
+# {id}: {service}
+
+**Status:** {status}
+
+## Customer impact
+
+{impact}
+
+## Timeline
+
+<$each items={timeline} as="event">
+  - **{event.time}** — {event.summary}
+    <$each items={event.evidence} as="evidence">
+      - {evidence}
+    </$each>
+</$each>
+
+<$show if={status === "resolved"}>
+  ## Recovery
+
+  Service was restored at {restoredAt}. Follow-up actions remain assigned below.
+
+</$show>
+<$show if={status === "investigating"}>
+  ## Current handoff
+
+  The cause is not confirmed. Continue from the recorded evidence and report
+  new findings before changing the recovery plan.
+
+</$show>
+## Assigned actions
+
+<$each items={actions} as="action">
+  - [ ] **{action.owner}:** {action.task}
+</$each>

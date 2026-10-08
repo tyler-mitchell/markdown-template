@@ -1,0 +1,10 @@
+---
+schema:
+  Footer:
+    ticket: string
+    service: string
+input: Footer
+---
+## Escalation note
+
+Keep {ticket} linked to the {service} incident record.

@@ -1,0 +1,20 @@
+{
+  "name": "Documentation preview",
+  "purpose": "Previews help-center edits locally before they are published.",
+  "deployment": {
+    "kind": "local",
+    "directory": "/work/help-center",
+    "command": "vp dev --host 127.0.0.1 --port 4173"
+  },
+  "checks": [
+    {
+      "name": "Preview home page",
+      "url": "http://127.0.0.1:4173/",
+      "expected": "HTTP 200 with the help-center home page."
+    }
+  ],
+  "onCall": {
+    "team": "Developer Experience",
+    "channel": "#docs-tooling"
+  }
+}
