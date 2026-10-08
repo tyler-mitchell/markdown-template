@@ -2,7 +2,11 @@ import { defineConfig } from "vite-plus";
 
 export default defineConfig({
   fmt: {
-    ignorePatterns: ["test/fixtures/**/*.expected.md", "test/fixtures/**/*.actual.md"],
+    ignorePatterns: [
+      "CHANGELOG.md",
+      "test/fixtures/**/*.expected.md",
+      "test/fixtures/**/*.actual.md",
+    ],
   },
   pack: {
     entry: ["src/index.ts"],
