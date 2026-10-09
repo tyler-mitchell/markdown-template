@@ -27,14 +27,20 @@ function getMatch(source: string) {
   }
 }
 
+/** Native Markdown editing, formatting shortcuts, and undo history. */
+export const MarkdownExtension = defineExtension({
+  name: "@markdown-template/lexical/Markdown",
+  dependencies: [RichTextExtension, HistoryExtension, ListExtension, LinkExtension, CodeExtension],
+  register: (editor) => registerMarkdownShortcuts(editor, TRANSFORMERS),
+});
+
 /** Native Lexical behavior and nodes for editing MDT documents. */
 export const TemplateExtension = defineExtension({
   name: "@markdown-template/lexical/Template",
-  dependencies: [RichTextExtension, HistoryExtension, ListExtension, LinkExtension, CodeExtension],
+  dependencies: [MarkdownExtension],
   nodes: [TemplateBlockNode, TemplateBodyNode, TemplateSourceNode],
   register(editor) {
     return mergeRegister(
-      registerMarkdownShortcuts(editor, TRANSFORMERS),
       editor.registerNodeTransform(TextNode, (node) => {
         if (!node.isSimpleText() || node.hasFormat("code")) return;
         const match = getMatch(node.getTextContent());

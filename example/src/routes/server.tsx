@@ -2,8 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
-import { compile, type } from "markdown-template";
-import source from "../../templates/notice.mdt?raw";
+import { type } from "markdown-template";
 import release from "../../data/release.json";
 import { DocumentPreview } from "#/components/document-preview";
 import { Button } from "#/components/ui/button";
@@ -12,10 +11,8 @@ import { Badge } from "#/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "#/components/ui/alert";
 import { Field, FieldGroup, FieldLabel } from "#/components/ui/field";
 import { Popover, PopoverContent, PopoverTrigger } from "#/components/ui/popover";
-import { TemplateEditor } from "#/components/template-editor";
 
 const renderInput = type({ values: { "[string]": "unknown" } });
-const document = compile(source);
 
 const renderNotice = createServerFn({ method: "POST" })
   .validator(renderInput)
@@ -70,20 +67,15 @@ function ServerPage() {
             {render.isPending ? "Rendering…" : "Render on server"}
           </Button>
         </div>
-        <div className="grid gap-6 md:grid-cols-2">
-          <section aria-label="Template" className="rounded-lg border">
-            <TemplateEditor initialDocument={document} editable={false} />
-          </section>
-          <section aria-label="Server result" className="rounded-lg border">
-            {render.data ? (
-              <DocumentPreview content={render.data.markdown} />
-            ) : (
-              <p className="p-6 text-muted-foreground">
-                Render the release data to see the returned document.
-              </p>
-            )}
-          </section>
-        </div>
+        <section aria-label="Server result">
+          {render.data ? (
+            <DocumentPreview content={render.data.markdown} />
+          ) : (
+            <p className="p-6 text-muted-foreground">
+              Render the release data to see the returned document.
+            </p>
+          )}
+        </section>
         {render.error && (
           <Alert variant="destructive">
             <AlertTitle>Could not render this data</AlertTitle>

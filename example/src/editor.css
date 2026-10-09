@@ -1,60 +1,13 @@
 @source "./**/*.{ts,tsx}";
 
 .mdt-editor {
-  min-height: 0;
-  height: 100%;
+  min-height: 100%;
 }
 
 .mdt-editor-content {
-  height: 100%;
-  min-height: 0;
-  overflow: auto;
-  padding: 1.5rem;
+  min-height: 100%;
+  max-width: 48rem;
+  margin-inline: auto;
+  padding: 2.5rem 1.5rem 6rem;
   outline: none;
-}
-
-.mdt-editor-content h1 {
-  font-size: 1.75em;
-  font-weight: 600;
-}
-.mdt-editor-content h2 {
-  font-size: 1.4em;
-  font-weight: 600;
-}
-.mdt-editor-content h3 {
-  font-size: 1.2em;
-  font-weight: 600;
-}
-.mdt-editor-content p {
-  margin: 0;
-}
-.mdt-editor-content ul {
-  list-style: disc;
-  padding-inline-start: 1.5em;
-}
-.mdt-editor-content ol {
-  list-style: decimal;
-  padding-inline-start: 1.5em;
-}
-.mdt-editor-content blockquote {
-  border-inline-start: 2px solid var(--border);
-  padding-inline-start: 1em;
-}
-.mdt-editor-content pre {
-  white-space: pre-wrap;
-  font-family: var(--font-mono, monospace);
-}
-.mdt-template-block {
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 0.75em;
-}
-.mdt-template-block > p {
-  color: var(--muted-foreground);
-  font-size: 0.75em;
-}
-.mdt-template-source {
-  border-radius: 0.25em;
-  background: var(--muted);
-  font-family: inherit;
 }

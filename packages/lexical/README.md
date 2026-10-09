@@ -68,10 +68,10 @@ editor.update(() => $importDocument(updated), {
 
 This replaces the draft in one undo step without moving browser focus.
 The host decides when to apply it. Do not re-import source after every keystroke.
-The example's `TemplateEditor` calls its starting value `initialDocument`.
 
 Lexical normalizes Markdown formatting, including list indentation. Frontmatter
 and template expressions remain source text.
 
 The package contains no React components, stylesheets, routing, or file access.
-The Start app in `example/` supplies the presentation.
+`MarkdownExtension` supplies the same native formatting and history without
+template syntax handling. The Start example uses it to edit rendered Markdown.

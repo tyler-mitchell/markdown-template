@@ -3,42 +3,44 @@ import { LexicalExtensionComposer } from "@lexical/react/LexicalExtensionCompose
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { defineExtension } from "lexical";
-import { $exportDocument, $importDocument, TemplateExtension } from "@markdown-template/lexical";
-import type { CompiledDocument } from "markdown-template";
+import { MarkdownExtension } from "@markdown-template/lexical";
+import { $convertFromMarkdownString, $convertToMarkdownString } from "@lexical/markdown";
 
-export function TemplateEditor({
-  initialDocument,
+export function DocumentEditor({
+  initialMarkdown,
   onChange,
-  editable = true,
 }: {
-  initialDocument: CompiledDocument;
-  onChange?: (source: string) => void;
-  editable?: boolean;
+  initialMarkdown: string;
+  onChange?: (markdown: string) => void;
 }) {
   const [extension] = useState(() =>
     defineExtension({
-      name: "example/template-editor",
-      dependencies: [TemplateExtension],
-      editable,
-      $initialEditorState: () => $importDocument(initialDocument),
+      name: "example/document-editor",
+      dependencies: [MarkdownExtension],
+      $initialEditorState: () => $convertFromMarkdownString(initialMarkdown),
     }),
   );
   return (
     <div className="mdt-editor">
       <LexicalExtensionComposer extension={extension} contentEditable={null}>
         {onChange && <DocumentChanges onChange={onChange} />}
-        <ContentEditable className="mdt-editor-content" aria-label="Template document" />
+        <ContentEditable
+          className="mdt-editor-content prose prose-zinc dark:prose-invert"
+          aria-label="Document"
+        />
       </LexicalExtensionComposer>
     </div>
   );
 }
 
-function DocumentChanges({ onChange }: { onChange: (source: string) => void }) {
+function DocumentChanges({ onChange }: { onChange: (markdown: string) => void }) {
   const [editor] = useLexicalComposerContext();
   useEffect(
     () =>
       editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves }) => {
-        if (dirtyElements.size || dirtyLeaves.size) onChange(editorState.read($exportDocument));
+        if (dirtyElements.size || dirtyLeaves.size) {
+          onChange(editorState.read(() => $convertToMarkdownString()));
+        }
       }),
     [editor, onChange],
   );
