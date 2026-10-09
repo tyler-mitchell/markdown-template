@@ -1,4 +1,4 @@
-import { CodeExtension } from "@lexical/code";
+import { $isCodeNode, CodeExtension } from "@lexical/code";
 import { HistoryExtension } from "@lexical/history";
 import { LinkExtension } from "@lexical/link";
 import { ListExtension } from "@lexical/list";
@@ -12,8 +12,15 @@ import {
   mergeRegister,
   TextNode,
 } from "lexical";
-import { compile, TemplateSyntaxError } from "markdown-template";
-import { TemplateBlockNode, TemplateBodyNode, TemplateSourceNode } from "./nodes";
+import { compile } from "markdown-template";
+import { $getState } from "lexical";
+import {
+  $createTemplateExpression,
+  sourceState,
+  TemplateBlockNode,
+  TemplateBodyNode,
+  TemplateSourceNode,
+} from "./nodes";
 
 function getMatch(source: string) {
   try {
@@ -22,8 +29,8 @@ function getMatch(source: string) {
     return part
       ? { start: document.contentOffset + part.offset, end: document.contentOffset + part.end }
       : null;
-  } catch (error) {
-    return error instanceof TemplateSyntaxError ? { start: error.offset, end: error.end } : null;
+  } catch {
+    return null;
   }
 }
 
@@ -42,10 +49,16 @@ export const TemplateExtension = defineExtension({
   register(editor) {
     return mergeRegister(
       editor.registerNodeTransform(TextNode, (node) => {
-        if (!node.isSimpleText() || node.hasFormat("code")) return;
+        if (!node.isSimpleText() || node.hasFormat("code") || $isCodeNode(node.getParent())) return;
         const match = getMatch(node.getTextContent());
         if (!match) return;
         const fragment = node.splitText(match.start, match.end)[match.start === 0 ? 0 : 1];
+        if (fragment.getTextContent().startsWith("{{")) {
+          fragment.replace(
+            $createTemplateExpression(fragment.getTextContent()).setFormat(node.getFormat()),
+          );
+          return;
+        }
         fragment.replace(
           $create(TemplateSourceNode)
             .setTextContent(fragment.getTextContent())
@@ -55,6 +68,7 @@ export const TemplateExtension = defineExtension({
         );
       }),
       editor.registerNodeTransform(TemplateSourceNode, (node) => {
+        if ($getState(node, sourceState)) return;
         const source = node.getTextContent();
         const next = node.getNextSibling();
         if (

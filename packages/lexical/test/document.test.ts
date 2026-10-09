@@ -1,10 +1,18 @@
 import { buildEditorFromExtensions } from "@lexical/extension";
 import { HeadlessExtension } from "@lexical/headless";
-import { $getRoot, $getSelection } from "lexical";
+import { $getRoot, $getSelection, $getState, $setState } from "lexical";
 import { compile, TemplateSyntaxError } from "markdown-template";
 import { expect, test } from "vite-plus/test";
 import MarkdownIt from "markdown-it";
-import { TemplateExtension, $exportDocument, $importDocument, TemplateSourceNode } from "../src";
+import {
+  TemplateExtension,
+  $exportDocument,
+  $importDocument,
+  TemplateSourceNode,
+  TemplateBlockNode,
+  sourceState,
+  $createTemplateExpression,
+} from "../src";
 import escalation from "../../../test/fixtures/support-escalation/template.mdt?raw";
 import escalationInput from "../../../test/fixtures/support-escalation/structured-steps.input.json";
 import escalationExpected from "../../../test/fixtures/support-escalation/structured-steps.expected.md?raw";
@@ -75,9 +83,10 @@ test("edits a release introduction while retaining its schema and repeated chang
       $getRoot()
         .getAllTextNodes()
         .filter(
-          (node) => node instanceof TemplateSourceNode && node.getTextContent().startsWith("{{"),
+          (node) =>
+            node instanceof TemplateSourceNode && $getState(node, sourceState).startsWith("{{"),
         )
-        .map((node) => node.getTextContent()),
+        .map((node) => $getState(node, sourceState)),
     ),
   ).toEqual(["{{ version }}", "{{ change.title }}", "{{ change.description }}"]);
   editor.dispose();
@@ -97,7 +106,7 @@ test("retains nested each and match sections in an engineering escalation", () =
   editor.dispose();
 });
 
-test("edits an interpolation in place through a Lexical text selection", () => {
+test("replaces an interpolation badge in a Lexical transaction", () => {
   const editor = buildEditorFromExtensions(HeadlessExtension, TemplateExtension);
   editor.update(() => $importDocument(compile(source)), { discrete: true });
   editor.update(
@@ -105,9 +114,10 @@ test("edits an interpolation in place through a Lexical text selection", () => {
       const version = $getRoot()
         .getAllTextNodes()
         .find(
-          (node) => node instanceof TemplateSourceNode && node.getTextContent() === "{{ version }}",
+          (node) =>
+            node instanceof TemplateSourceNode && $getState(node, sourceState) === "{{ version }}",
         )!;
-      version.select(3, 10).insertText("version.toUpperCase()");
+      version.replace($createTemplateExpression("{{ version.toUpperCase() }}"));
     },
     { discrete: true },
   );
@@ -119,16 +129,15 @@ test("edits an interpolation in place through a Lexical text selection", () => {
   editor.dispose();
 });
 
-test("edits a repeated section's expression directly in the document", () => {
+test("changes a repeated section while retaining its document content", () => {
   const editor = buildEditorFromExtensions(HeadlessExtension, TemplateExtension);
   editor.update(() => $importDocument(compile(source)), { discrete: true });
   editor.update(
     () => {
       const opening = $getRoot()
-        .getAllTextNodes()
-        .find((node) => node.getTextContent() === '<$each items={changes} as="change">')!;
-      const start = opening.getTextContent().indexOf("changes");
-      opening.select(start, start + "changes".length).insertText("changes.slice(0, 1)");
+        .getChildren()
+        .find((node) => node instanceof TemplateBlockNode)!;
+      $setState(opening, sourceState, '<$each items={changes.slice(0, 1)} as="change">');
     },
     { discrete: true },
   );
@@ -152,6 +161,9 @@ test.each([
   ["api-integration", "staging"],
   ["container-build", "asset-api"],
   ["symbol-search", "anchored"],
+  ["customer-quote", "accessibility-audit"],
+  ["meeting-follow-up", "migration-planning"],
+  ["incident-handoff", "upload-failure"],
 ])("preserves %s template meaning through an unrelated introduction edit", (fixture, input) => {
   const prefix = `../../../test/fixtures/${fixture}/`;
   const source = fixtureSources[`${prefix}template.mdt`];

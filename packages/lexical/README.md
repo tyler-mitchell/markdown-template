@@ -28,10 +28,10 @@ export function ReleaseNotice() {
 The extension reference must stay stable. Lexical owns the editor lifecycle,
 selection, editing transactions, and undo history.
 
-Text, expressions, and directive lines are editable in the document.
+Prose is editable; expressions are badges and directives contain editable blocks.
 Markdown shortcuts provide headings, lists, and inline formatting.
 Typed and pasted template syntax uses the compiler's source boundaries.
-Incomplete syntax stays editable; inline code keeps Lexical's normal handling.
+Incomplete syntax stays editable; code retains its authored expressions.
 
 Export source inside a Lexical read:
 
@@ -73,5 +73,16 @@ Lexical normalizes Markdown formatting, including list indentation. Frontmatter
 and template expressions remain source text.
 
 The package contains no React components, stylesheets, routing, or file access.
-`MarkdownExtension` supplies the same native formatting and history without
-template syntax handling. The Start example uses it to edit rendered Markdown.
+`MarkdownExtension` supplies native formatting and history without template handling.
+The Start example uses `TemplateExtension` and Lexical's native typeahead menu.
+Suggestions come from the input schema, including nested fields and descriptions.
+
+Insert a selected field inside a Lexical update:
+
+```ts
+import { $createTemplateExpression } from "@markdown-template/lexical";
+
+queryNode.replace($createTemplateExpression("{{ version }}"));
+```
+
+The badge displays `version`; exporting returns `{{ version }}`.

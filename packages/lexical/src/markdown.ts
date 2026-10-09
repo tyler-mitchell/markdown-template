@@ -4,12 +4,17 @@ import {
   TRANSFORMERS,
   type Transformer,
 } from "@lexical/markdown";
-import { $create, $createParagraphNode, $getRoot, $getState, $setState } from "lexical";
+import { $create, $getRoot, $getState, $isTextNode, $setState } from "lexical";
+import { $isCodeNode } from "@lexical/code";
 import MarkdownIt from "markdown-it";
 import { compile, type CompiledDocument } from "markdown-template";
 import {
   frontmatterState,
   indentState,
+  sourceState,
+  closingState,
+  labelState,
+  $createTemplateExpression,
   TemplateBlockNode,
   TemplateBodyNode,
   TemplateSourceNode,
@@ -26,7 +31,7 @@ const templateExport: Transformer[] = [
     export(node) {
       if (!(node instanceof TemplateBlockNode)) return null;
       const padding = " ".repeat($getState(node, indentState));
-      return node
+      const body = node
         .getChildren()
         .map((child) =>
           child instanceof TemplateBodyNode
@@ -36,6 +41,7 @@ const templateExport: Transformer[] = [
             : child.getTextContent(),
         )
         .join("\n");
+      return [$getState(node, sourceState), body, $getState(node, closingState)].join("\n");
     },
   },
   {
@@ -43,8 +49,16 @@ const templateExport: Transformer[] = [
     dependencies: [TemplateSourceNode],
     regExp: /$^/,
     export(node, _children, exportFormat) {
-      if (!(node instanceof TemplateSourceNode)) return null;
-      const source = node.getTextContent();
+      if (!(node instanceof TemplateSourceNode)) {
+        if (!$isTextNode(node) || node.hasFormat("code")) return null;
+        const text = node.getTextContent();
+        const start = text.indexOf("{{");
+        if (start < 0) return null;
+        return exportFormat(node, text.slice(0, start) + "\uFFFC").replace("\uFFFC", () =>
+          text.slice(start),
+        );
+      }
+      const source = $getState(node, sourceState) || node.getTextContent();
       // Apply Lexical's formatting without escaping template syntax.
       return node.hasFormat("code")
         ? exportFormat(node, source)
@@ -71,18 +85,28 @@ function transformers(document: CompiledDocument): Transformer[] {
             if (candidate.trimStart() !== raw.trimStart()) return null;
             const node = $create(TemplateBlockNode);
             $setState(node, indentState, part.bodyIndent);
-            const bodyNode = $create(TemplateBodyNode);
-            node.append(
-              $createParagraphNode().append(
-                $create(TemplateSourceNode).setTextContent(part.source),
-              ),
-              bodyNode,
-              $createParagraphNode().append(
-                $create(TemplateSourceNode).setTextContent(
-                  document.content.slice(part.bodyEnd, part.end).trim(),
-                ),
-              ),
+            const padding = " ".repeat(part.indent);
+            $setState(node, sourceState, padding + part.source);
+            $setState(
+              node,
+              closingState,
+              padding + document.content.slice(part.bodyEnd, part.end).trim(),
             );
+            $setState(
+              node,
+              labelState,
+              (
+                {
+                  each: "Repeat",
+                  show: "Condition",
+                  match: "Match",
+                  case: "Case",
+                  default: "Otherwise",
+                } as Record<string, string>
+              )[part.name] ?? part.name,
+            );
+            const bodyNode = $create(TemplateBodyNode);
+            node.append(bodyNode);
             rootNode.append(node);
             const body = document.content.slice(part.bodyOffset, part.bodyEnd);
             const state = new markdown.block.State(body, markdown, {}, []);
@@ -98,6 +122,14 @@ function transformers(document: CompiledDocument): Transformer[] {
         regExp: new RegExp(RegExp.escape(source)),
         importRegExp: new RegExp(RegExp.escape(source)),
         replace(node) {
+          if (
+            part.kind === "expression" &&
+            !node.hasFormat("code") &&
+            !$isCodeNode(node.getParent())
+          ) {
+            node.replace($createTemplateExpression(source).setFormat(node.getFormat()));
+            return;
+          }
           const replacement = $create(TemplateSourceNode);
           node.replace(replacement.setTextContent(source).setFormat(node.getFormat()));
         },

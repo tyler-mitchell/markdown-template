@@ -3,22 +3,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import notice from "../../templates/notice.mdt";
 import handoff from "../../templates/release-handoff.mdt";
 import deployment from "../../templates/deployment/workflow.mdt";
-import release from "../../data/release.json";
-import handoffData from "../../data/release-handoff.json";
-import deploymentData from "../../data/deployment.json";
 import { DocumentEditor } from "#/components/document-editor";
 import { NativeSelect, NativeSelectOption } from "#/components/ui/native-select";
 
 export const Route = createFileRoute("/")({ ssr: false, component: EditorPage });
 
 const examples = [
-  { id: "notice", document: notice, markdown: notice.render(release) },
-  {
-    id: "handoff",
-    document: handoff,
-    markdown: handoff.renderValidated(handoff.input.assert(handoffData)),
-  },
-  { id: "deployment", document: deployment, markdown: deployment.render(deploymentData) },
+  { id: "notice", document: notice },
+  { id: "handoff", document: handoff },
+  { id: "deployment", document: deployment },
 ];
 
 function EditorPage() {
@@ -39,9 +32,9 @@ function EditorPage() {
           ))}
         </NativeSelect>
       </div>
-      {examples.map(({ id, markdown }) => (
+      {examples.map(({ id, document }) => (
         <div key={id} hidden={selected !== id} className="min-h-0 flex-1 overflow-auto">
-          <DocumentEditor initialMarkdown={markdown} />
+          <DocumentEditor initialDocument={document} />
         </div>
       ))}
     </main>

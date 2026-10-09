@@ -1,4 +1,21 @@
-import { createState, ElementNode, TextNode, type EditorConfig } from "lexical";
+import {
+  $create,
+  $getState,
+  $setState,
+  createState,
+  ElementNode,
+  TextNode,
+  type EditorConfig,
+} from "lexical";
+export const sourceState = createState("source", {
+  parse: (value) => (typeof value === "string" ? value : ""),
+});
+export const closingState = createState("closing", {
+  parse: (value) => (typeof value === "string" ? value : ""),
+});
+export const labelState = createState("label", {
+  parse: (value) => (typeof value === "string" ? value : ""),
+});
 export const indentState = createState("indent", {
   parse: (value) => (typeof value === "number" ? value : 0),
 });
@@ -6,7 +23,7 @@ export const frontmatterState = createState("frontmatter", {
   parse: (value) => (typeof value === "string" ? value : ""),
 });
 
-/** Authored template syntax, editable without Markdown escaping. */
+/** An inline template reference retaining its authored expression. */
 export class TemplateSourceNode extends TextNode {
   $config() {
     return this.config("mdt-source", { extends: TextNode });
@@ -15,8 +32,18 @@ export class TemplateSourceNode extends TextNode {
   createDOM(config: EditorConfig) {
     const element = super.createDOM(config);
     element.classList.add("mdt-template-source");
+    element.title = $getState(this, sourceState) || this.getTextContent();
     return element;
   }
+}
+
+/** Creates a selectable badge whose Markdown export retains the expression. */
+export function $createTemplateExpression(source: string) {
+  return $setState(
+    $create(TemplateSourceNode).setTextContent(source.slice(2, -2).trim()).setMode("token"),
+    sourceState,
+    source,
+  );
 }
 
 /** A template directive containing editable Markdown. */
@@ -28,6 +55,8 @@ export class TemplateBlockNode extends ElementNode {
   createDOM() {
     const element = document.createElement("section");
     element.className = "mdt-template-block";
+    element.dataset.label = $getState(this, labelState);
+    element.title = $getState(this, sourceState);
     return element;
   }
 

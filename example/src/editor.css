@@ -11,3 +11,27 @@
   padding: 2.5rem 1.5rem 6rem;
   outline: none;
 }
+
+.mdt-editor-content p {
+  margin: 0;
+}
+
+.mdt-template-source {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  border-radius: var(--radius-sm);
+  padding: 0.125em 0.35em;
+  font-size: 0.85em;
+  font-weight: 500;
+}
+
+.mdt-template-block {
+  border-inline-start: 2px solid var(--border);
+  padding-inline-start: 1rem;
+}
+
+.mdt-template-block::before {
+  content: attr(data-label);
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+}
