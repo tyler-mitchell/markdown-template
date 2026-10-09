@@ -8,7 +8,7 @@ export async function load({ file }: { file: string }): Promise<LoadedDocument> 
   const path = getPath(["<cwd>", getPath({ to: file, startingFrom: "." })]);
   const source = readFile(path);
   const includes: Record<string, LoadedDocument | string> = {};
-  const parsed = parse(source);
+  const parsed = parse({ source, file: path });
   const document = compileDocument(parsed, { includes });
   const pending = [...parsed.children];
   for (const part of pending) {

@@ -41,7 +41,7 @@ export function compile(
   source: string,
   options: CompileOptions<Module<Record<string, any>>, string> = {},
 ): CompiledDocument {
-  return compileDocument(parse(source), options);
+  return compileDocument(parse({ source }), options);
 }
 
 export function compileDocument(
@@ -180,4 +180,3 @@ export function compileDocument(
     renderValidated,
   };
 }
-

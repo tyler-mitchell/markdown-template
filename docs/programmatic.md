@@ -11,25 +11,28 @@ The `input` argument selects the type that describes the render arguments.
 ```ts
 import { compile, type } from "markdown-template";
 
-const document = compile(`# {{ service }}
+const document = compile(
+  `# {{ service }}
 
 Request timeout: {{ timeoutMs }} ms.
-`, {
-  schema: type.module({
-    Notice: {
-      service: "string",
-      timeoutMs: [
-        "number > 0",
-        "@",
-        {
-          default: 5000,
-          description: "Maximum request duration in milliseconds.",
-        },
-      ],
-    },
-  }),
-  input: "Notice",
-});
+`,
+  {
+    schema: type.module({
+      Notice: {
+        service: "string",
+        timeoutMs: [
+          "number > 0",
+          "@",
+          {
+            default: 5000,
+            description: "Maximum request duration in milliseconds.",
+          },
+        ],
+      },
+    }),
+    input: "Notice",
+  },
+);
 
 const markdown = document.render({ service: "Asset API" });
 ```
@@ -116,6 +119,30 @@ Elements also expose their children and body ranges.
 
 These ranges identify authored constructs. They do not map every rendered character back to its source.
 The compiler does not provide recovery for incomplete syntax or a complete editor implementation.
+
+## Locate invalid syntax
+
+Keep the draft editable when compilation fails. `TemplateSyntaxError` identifies
+the affected construct in the complete source, including frontmatter.
+
+```ts
+import { compile, TemplateSyntaxError } from "markdown-template";
+
+const draft = "# Release\n\nVersion: {{ version. }}";
+
+try {
+  compile(draft);
+} catch (error) {
+  if (error instanceof TemplateSyntaxError) {
+    console.log(error.line, error.column); // 3, 10
+    console.log(draft.slice(error.offset, error.end)); // {{ version. }}
+  }
+}
+```
+
+Offsets count UTF-16 units; lines and columns start at 1. `load` and Vite imports
+also supply `error.file`. The underlying parser error remains in `error.cause`.
+Schema and argument failures retain ArkType's own diagnostics.
 
 ## Use an authored file
 

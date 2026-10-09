@@ -173,6 +173,6 @@ if (result.issues) {
 ```
 
 An application can show the issues beside its controls and render only validated values.
-The example app uses this path when its release data changes.
+The example app calls `render`, which validates its input before rendering.
 
 Templates execute authored expressions. Use templates from authors you trust.

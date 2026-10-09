@@ -9,7 +9,7 @@ export function markdownTemplate() {
     transform: {
       filter: { id: /\.mdt$/ },
       handler(source: string, id: string) {
-        const parsed = parse(source);
+        const parsed = parse({ source, file: id });
         const document = compileDocument(parsed);
         const dependencies = new Map<string, boolean>();
         const pending = [...parsed.children];
@@ -29,8 +29,9 @@ export function markdownTemplate() {
         const includes = [...dependencies];
         const code = [
           'import { compile } from "markdown-template";',
-          ...includes.map(([src, raw], index) =>
-            `import include${index} from ${JSON.stringify(getPath({ to: ["<current_folder>", src], from: id }) + (raw ? "?raw" : ""))};`,
+          ...includes.map(
+            ([src, raw], index) =>
+              `import include${index} from ${JSON.stringify(getPath({ to: ["<current_folder>", src], from: id }) + (raw ? "?raw" : ""))};`,
           ),
           `export default compile(${JSON.stringify(source)}, { includes: {`,
           ...includes.map(([src], index) => `${JSON.stringify(src)}: include${index},`),

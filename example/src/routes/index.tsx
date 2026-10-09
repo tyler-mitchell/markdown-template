@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { compile } from "markdown-template";
+import { compile, TemplateSyntaxError } from "markdown-template";
 import source from "../../templates/notice.mdt?raw";
 import release from "../../data/release.json";
 import { TemplateEditor } from "#/components/template-editor";
@@ -29,6 +29,8 @@ function EditorPage() {
         document: undefined,
         markdown: undefined,
         error: error instanceof Error ? error.message : String(error),
+        source:
+          error instanceof TemplateSyntaxError ? draft.slice(error.offset, error.end) : undefined,
       };
     }
   }, [draft, input]);
@@ -88,6 +90,15 @@ function EditorPage() {
           </Button>
         </div>
       </div>
+      {result.error && (
+        <Alert variant="destructive" className="mx-6 my-3 w-auto">
+          <AlertTitle>Preview needs attention</AlertTitle>
+          <AlertDescription>
+            <pre className="whitespace-pre-wrap">{result.error}</pre>
+            {result.source && <code className="whitespace-pre-wrap">{result.source}</code>}
+          </AlertDescription>
+        </Alert>
+      )}
       <ResizablePanelGroup orientation="horizontal" className="min-h-0 flex-1">
         <ResizablePanel defaultSize="55%" minSize="30%">
           <TemplateEditor document={document} onChange={setDraft} />
@@ -97,16 +108,7 @@ function EditorPage() {
             <ResizableHandle withHandle />
             <ResizablePanel defaultSize="45%" minSize="25%">
               <section className="h-full overflow-auto" aria-label="Rendered document">
-                {result.error ? (
-                  <Alert variant="destructive" className="m-4 w-auto">
-                    <AlertTitle>Preview needs attention</AlertTitle>
-                    <AlertDescription>
-                      <pre className="whitespace-pre-wrap">{result.error}</pre>
-                    </AlertDescription>
-                  </Alert>
-                ) : (
-                  <DocumentPreview content={result.markdown!} />
-                )}
+                {result.markdown !== undefined && <DocumentPreview content={result.markdown} />}
               </section>
             </ResizablePanel>
           </>

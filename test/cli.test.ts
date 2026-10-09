@@ -11,6 +11,22 @@ test("discovers and renders a document without a configuration file", async () =
   expect(result.markdown).toBe("The release notes are ready for review.\n");
 });
 
+test("reports the file and location of an incomplete template", async () => {
+  const key = "cli-project/incomplete.mdt";
+  await fs.createFile(key, "# Release\n\nVersion: {{ version. }}");
+  try {
+    await expect(load({ file: fs.getFilePath(key) })).rejects.toMatchObject({
+      name: "TemplateSyntaxError",
+      file: fs.getFilePath(key),
+      line: 3,
+      column: 10,
+      cause: expect.any(Error),
+    });
+  } finally {
+    await fs.storage.removeItem(key);
+  }
+});
+
 test("discovers documents and renders configured jobs from another working directory", async () => {
   const cwd = fs.getFilePath("cli-project");
   expect(await commands.list({ cwd })).toEqual([

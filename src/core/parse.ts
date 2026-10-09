@@ -2,6 +2,7 @@ import matter from "front-matter";
 import MarkdownIt from "markdown-it";
 import { getText, type CstNode } from "monogram/src/gen-parser.ts";
 import { parser } from "./grammar.ts";
+import { TemplateSyntaxError } from "./errors.ts";
 import type {
   Element as DocumentElement,
   Escape,
@@ -43,13 +44,33 @@ function findEnd(source: string, terminator: "}" | ">"): number {
 
 export const markdown = new MarkdownIt({ html: true });
 type Container = { element: Element; closingLine?: number };
-type BlockEnvironment = { containers: Container[]; children: Part[] };
-type InlineEnvironment = {
+type Diagnostic = { message: string; offset: number; end: number; cause?: unknown };
+type Environment = { fail: (diagnostic: Diagnostic) => never };
+type BlockEnvironment = Environment & { containers: Container[]; children: Part[] };
+type InlineEnvironment = Environment & {
   offset: number;
   inlines: Part[];
   containers: Element[];
   tags: boolean;
 };
+
+function parseSyntax({
+  source,
+  rule,
+  offset,
+  fail,
+}: Environment & { source: string; rule: "Tag" | "Interpolation"; offset: number }) {
+  try {
+    return parser.parse(source, rule);
+  } catch (cause) {
+    return fail({
+      message: `Invalid ${rule === "Tag" ? "directive" : "interpolation"}`,
+      offset,
+      end: offset + source.length,
+      cause,
+    });
+  }
+}
 const inline = new MarkdownIt("zero");
 inline.inline.ruler.enable(["escape", "newline"]);
 
@@ -57,8 +78,7 @@ inline.inline.ruler.before("escape", "mdt_escape", (state, silent) => {
   const rest = state.src.slice(state.pos);
   const expression = rest.startsWith("\\{{");
   const tag = rest.startsWith("\\<$") || rest.startsWith("\\</$");
-  const length =
-    expression || tag ? 1 + findEnd(rest.slice(1), expression ? "}" : ">") : 2;
+  const length = expression || tag ? 1 + findEnd(rest.slice(1), expression ? "}" : ">") : 2;
   const source = rest.slice(0, length);
   if (!expression && !tag && source !== "\\{" && source !== "\\}") return false;
   if (!silent) {
@@ -78,7 +98,16 @@ inline.inline.ruler.before("text", "mdt_expression", (state, silent) => {
   if (!state.src.startsWith("{{", state.pos)) return false;
   const rest = state.src.slice(state.pos, state.posMax);
   const source = rest.slice(0, findEnd(rest, "}"));
-  const syntax = { source, tree: parser.parse(source, "Interpolation") };
+  const environment = state.env as InlineEnvironment;
+  const syntax = {
+    source,
+    tree: parseSyntax({
+      source,
+      rule: "Interpolation",
+      offset: environment.offset + state.pos,
+      fail: environment.fail,
+    }),
+  };
   if (!silent) {
     const { offset, inlines, containers } = state.env as InlineEnvironment;
     (containers.at(-1)?.children ?? inlines).push({
@@ -98,7 +127,12 @@ inline.inline.ruler.before("text", "mdt_tag", (state, silent) => {
   if (!rest.startsWith("<$") && !rest.startsWith("</$")) return false;
   if (!environment.tags && !rest.startsWith("<$include")) return false;
   const source = rest.slice(0, findEnd(rest, ">"));
-  const tree = parser.parse(source, "Tag");
+  const tree = parseSyntax({
+    source,
+    rule: "Tag",
+    offset: environment.offset + state.pos,
+    fail: environment.fail,
+  });
   const name = getText(tree.children[1], source);
   if (
     !environment.tags &&
@@ -118,7 +152,8 @@ inline.inline.ruler.before("text", "mdt_tag", (state, silent) => {
     const end = offset + source.length;
     if (source.startsWith("</")) {
       const parent = environment.containers.pop();
-      if (!parent || parent.name !== name) throw new SyntaxError(`Unexpected closing tag: ${name}`);
+      if (!parent || parent.name !== name)
+        return environment.fail({ message: `Unexpected closing tag: ${name}`, offset, end });
       parent.bodyEnd = offset;
       parent.end = end;
     } else {
@@ -154,7 +189,9 @@ markdown.block.ruler.before(
     const source = rest.slice(0, findEnd(rest, ">"));
     if (rest.slice(source.length).split("\n", 1)[0].trim()) return false;
     if (silent) return true;
-    const tree = parser.parse(source, "Tag");
+    const environment = state.env as BlockEnvironment;
+    const offset = state.bMarks[start] + state.tShift[start];
+    const tree = parseSyntax({ source, rule: "Tag", offset, fail: environment.fail });
     const closing = source.startsWith("</");
     const nesting = source.endsWith("/>") ? 0 : 1;
     const token = state.push("mdt_tag", getText(tree.children[1], source), closing ? -1 : nesting);
@@ -166,7 +203,11 @@ markdown.block.ruler.before(
     const parent = containers.at(-1);
     if (closing && parent) {
       if (parent.element.name !== token.tag)
-        throw new SyntaxError(`Unexpected closing tag: ${token.tag}`);
+        environment.fail({
+          message: `Unexpected closing tag: ${token.tag}`,
+          offset,
+          end: offset + source.length,
+        });
       parent.element.bodyEnd = state.bMarks[start];
       parent.element.end = state.bMarks[state.line] ?? state.src.length;
       const body = new markdown.block.State(
@@ -180,7 +221,11 @@ markdown.block.ruler.before(
       parent.closingLine = state.line;
       state.line = end;
     } else if (closing) {
-      throw new SyntaxError(`Unexpected closing tag: ${token.tag}`);
+      environment.fail({
+        message: `Unexpected closing tag: ${token.tag}`,
+        offset,
+        end: offset + source.length,
+      });
     } else {
       const bodyOffset = state.bMarks[state.line] ?? state.src.length;
       const element: Element = {
@@ -212,7 +257,12 @@ markdown.block.ruler.before(
       }
       state.blkIndent = indent;
       containers.pop();
-      if (container.closingLine === undefined) throw new SyntaxError(`Unclosed tag: ${token.tag}`);
+      if (container.closingLine === undefined)
+        return environment.fail({
+          message: `Unclosed tag: ${token.tag}`,
+          offset,
+          end: offset + source.length,
+        });
       state.line = container.closingLine;
     }
     return true;
@@ -221,14 +271,24 @@ markdown.block.ruler.before(
 );
 
 /** Markdown owns prose and code; Monogram owns embedded document syntax. */
-export function parse(source: string) {
+export function parse({ source, file }: { source: string; file?: string }) {
   const { attributes: frontmatter, body: content } = matter<Record<string, any>>(source);
+  const fail: Environment["fail"] = ({ offset, end, ...diagnostic }) => {
+    const contentOffset = source.length - content.length;
+    throw new TemplateSyntaxError({
+      ...diagnostic,
+      source,
+      file,
+      offset: contentOffset + offset,
+      end: contentOffset + end,
+    });
+  };
   const children: Part[] = [];
   const tokens: ReturnType<typeof markdown.parse> = [];
   markdown.block.parse(
     content,
     markdown,
-    { containers: [], children } satisfies BlockEnvironment,
+    { containers: [], children, fail } satisfies BlockEnvironment,
     tokens,
   );
   const lines = new markdown.block.State(content, markdown, {}, []);
@@ -246,10 +306,14 @@ export function parse(source: string) {
         inlines,
         containers,
         tags: token.type !== "fence" && token.type !== "code_block",
+        fail,
       } satisfies InlineEnvironment,
       [],
     );
-    if (containers.length) throw new SyntaxError(`Unclosed tag: ${containers[0].name}`);
+    if (containers.length) {
+      const { name, offset, bodyOffset } = containers[0];
+      fail({ message: `Unclosed tag: ${name}`, offset, end: bodyOffset });
+    }
   }
   function insert(parts: Part[], inline: Part) {
     const parent = parts.find(

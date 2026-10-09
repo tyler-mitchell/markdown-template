@@ -1,4 +1,5 @@
 export { compile } from "./compile.ts";
+export { TemplateSyntaxError } from "./errors.ts";
 export { type } from "#arktype";
 export type {
   CompiledDocument,
