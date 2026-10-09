@@ -237,3 +237,25 @@ test("retains raw file includes and literal template examples while editing depl
   );
   editor.dispose();
 });
+
+test("preserves formatting inside directives and around schema fields with underscores", () => {
+  const source = `---
+schema:
+  Notice:
+    release_name: string
+    ready: boolean
+input: Notice
+---
+**{{ release_name }}**<$show if={ready}> — **Ready for review**</$show>.
+
+Release identifier: \`{{ release_name }}\`.
+`;
+  const editor = buildEditorFromExtensions(HeadlessExtension, TemplateExtension);
+  editor.update(() => $importDocument(compile(source)), { discrete: true });
+  const exported = editor.read($exportDocument);
+  expect(exported).toBe(source);
+  expect(compile(exported).render({ release_name: "Asset API 2.4", ready: true })).toBe(
+    "**Asset API 2.4** — **Ready for review**.\n\nRelease identifier: `Asset API 2.4`.\n",
+  );
+  editor.dispose();
+});

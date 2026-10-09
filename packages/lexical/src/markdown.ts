@@ -44,9 +44,13 @@ const templateExport: Transformer[] = [
     dependencies: [TemplateExpressionNode, TemplateSourceNode],
     regExp: /$^/,
     export(node, _children, exportFormat) {
-      return node instanceof TemplateExpressionNode || node instanceof TemplateSourceNode
-        ? exportFormat(node, node.getTextContent())
-        : null;
+      if (!(node instanceof TemplateExpressionNode || node instanceof TemplateSourceNode))
+        return null;
+      const source = node.getTextContent();
+      // Apply Lexical's formatting without escaping template syntax.
+      return node.hasFormat("code")
+        ? exportFormat(node, source)
+        : exportFormat(node, "\uFFFC").replace("\uFFFC", () => source);
     },
   },
   ...TRANSFORMERS,
