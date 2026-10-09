@@ -7,6 +7,7 @@ import {
   TextNode,
   type EditorConfig,
 } from "lexical";
+import { DecoratorTextNode } from "@lexical/extension";
 export const sourceState = createState("source", {
   parse: (value) => (typeof value === "string" ? value : ""),
 });
@@ -44,6 +45,21 @@ export function $createTemplateExpression(source: string) {
     sourceState,
     source,
   );
+}
+
+/** Placeholder for a host-rendered inline reference picker. */
+export class TemplateInputNode extends DecoratorTextNode {
+  $config() {
+    return this.config("mdt-input", { extends: DecoratorTextNode });
+  }
+
+  updateDOM() {
+    return false;
+  }
+
+  decorate(): unknown {
+    return null;
+  }
 }
 
 /** A template directive containing editable Markdown. */

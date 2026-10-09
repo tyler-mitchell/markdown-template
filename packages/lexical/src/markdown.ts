@@ -18,6 +18,7 @@ import {
   TemplateBlockNode,
   TemplateBodyNode,
   TemplateSourceNode,
+  TemplateInputNode,
 } from "./nodes";
 
 const markdown = new MarkdownIt();
@@ -46,9 +47,10 @@ const templateExport: Transformer[] = [
   },
   {
     type: "text-match",
-    dependencies: [TemplateSourceNode],
+    dependencies: [TemplateSourceNode, TemplateInputNode],
     regExp: /$^/,
     export(node, _children, exportFormat) {
+      if (node instanceof TemplateInputNode) return "";
       if (!(node instanceof TemplateSourceNode)) {
         if (!$isTextNode(node) || node.hasFormat("code")) return null;
         const text = node.getTextContent();

@@ -2,35 +2,54 @@ import { useEffect, useState } from "react";
 import { LexicalExtensionComposer } from "@lexical/react/LexicalExtensionComposer";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import { defineExtension } from "lexical";
-import { TemplateExtension, $importDocument, $exportDocument } from "@markdown-template/lexical";
+import { $create, configExtension, defineExtension } from "lexical";
+import {
+  TemplateExtension,
+  TemplateInputNode,
+  $importDocument,
+  $exportDocument,
+} from "@markdown-template/lexical";
 import type { CompiledDocument } from "markdown-template";
-import { TemplateSuggestions } from "./template-suggestions";
+import { TemplateContext, ReactTemplateInputNode } from "./template-input";
 
 export function DocumentEditor({
   initialDocument,
   onChange,
+  trigger,
 }: {
   initialDocument: CompiledDocument;
   onChange?: (source: string) => void;
+  trigger?: string;
 }) {
   const [extension] = useState(() =>
     defineExtension({
       name: "example/document-editor",
-      dependencies: [TemplateExtension],
+      dependencies: [
+        trigger === undefined ? TemplateExtension : configExtension(TemplateExtension, { trigger }),
+      ],
+      nodes: [
+        ReactTemplateInputNode,
+        {
+          replace: TemplateInputNode,
+          with: (node: TemplateInputNode) =>
+            $create(ReactTemplateInputNode).setFormat(node.getFormat()),
+          withKlass: ReactTemplateInputNode,
+        },
+      ],
       $initialEditorState: () => $importDocument(initialDocument),
     }),
   );
   return (
     <div className="mdt-editor">
-      <LexicalExtensionComposer extension={extension} contentEditable={null}>
-        {onChange && <DocumentChanges onChange={onChange} />}
-        <TemplateSuggestions document={initialDocument} />
-        <ContentEditable
-          className="mdt-editor-content prose prose-zinc dark:prose-invert"
-          aria-label="Document"
-        />
-      </LexicalExtensionComposer>
+      <TemplateContext value={initialDocument}>
+        <LexicalExtensionComposer extension={extension} contentEditable={null}>
+          {onChange && <DocumentChanges onChange={onChange} />}
+          <ContentEditable
+            className="mdt-editor-content prose prose-zinc dark:prose-invert"
+            aria-label="Document"
+          />
+        </LexicalExtensionComposer>
+      </TemplateContext>
     </div>
   );
 }

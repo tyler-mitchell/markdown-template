@@ -74,8 +74,22 @@ and template expressions remain source text.
 
 The package contains no React components, stylesheets, routing, or file access.
 `MarkdownExtension` supplies native formatting and history without template handling.
-The Start example uses `TemplateExtension` and Lexical's native typeahead menu.
+The Start example renders `TemplateInputNode` through Lexical node replacement.
+Its inline field uses `cmdk`, Radix Popover, and TanStack Hotkeys.
 Suggestions come from the input schema, including nested fields and descriptions.
+
+Configure the completion trigger through Lexical:
+
+```ts
+import { configExtension } from "lexical";
+import { TemplateExtension } from "@markdown-template/lexical";
+
+const extension = configExtension(TemplateExtension, { trigger: "@" });
+```
+
+The default is `{{`. The trigger disappears when the empty field opens.
+An unfinished field contributes no template source. Completion emits MDT syntax,
+regardless of the trigger.
 
 Insert a selected field inside a Lexical update:
 

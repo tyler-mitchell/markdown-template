@@ -6,4 +6,5 @@ export {
   TemplateBlockNode,
   TemplateBodyNode,
   TemplateSourceNode,
+  TemplateInputNode,
 } from "./nodes";

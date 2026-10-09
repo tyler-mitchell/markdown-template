@@ -4,22 +4,26 @@ import { LinkExtension } from "@lexical/link";
 import { ListExtension } from "@lexical/list";
 import { RichTextExtension } from "@lexical/rich-text";
 import { registerMarkdownShortcuts, TRANSFORMERS } from "@lexical/markdown";
+import { DecoratorTextExtension } from "@lexical/extension";
 import {
   $create,
   $createTextNode,
+  $getSelection,
+  $getState,
+  $isRangeSelection,
   $isTextNode,
   defineExtension,
   mergeRegister,
   TextNode,
 } from "lexical";
 import { compile } from "markdown-template";
-import { $getState } from "lexical";
 import {
   $createTemplateExpression,
   sourceState,
   TemplateBlockNode,
   TemplateBodyNode,
   TemplateSourceNode,
+  TemplateInputNode,
 } from "./nodes";
 
 function getMatch(source: string) {
@@ -44,12 +48,29 @@ export const MarkdownExtension = defineExtension({
 /** Native Lexical behavior and nodes for editing MDT documents. */
 export const TemplateExtension = defineExtension({
   name: "@markdown-template/lexical/Template",
-  dependencies: [MarkdownExtension],
-  nodes: [TemplateBlockNode, TemplateBodyNode, TemplateSourceNode],
-  register(editor) {
+  config: { trigger: "{{" },
+  dependencies: [MarkdownExtension, DecoratorTextExtension],
+  nodes: [TemplateBlockNode, TemplateBodyNode, TemplateSourceNode, TemplateInputNode],
+  register(editor, { trigger }) {
     return mergeRegister(
       editor.registerNodeTransform(TextNode, (node) => {
         if (!node.isSimpleText() || node.hasFormat("code") || $isCodeNode(node.getParent())) return;
+        const selection = $getSelection();
+        if (
+          trigger &&
+          $isRangeSelection(selection) &&
+          selection.isCollapsed() &&
+          selection.anchor.key === node.getKey() &&
+          node.getTextContent().slice(0, selection.anchor.offset).endsWith(trigger)
+        ) {
+          const end = selection.anchor.offset;
+          const start = end - trigger.length;
+          const fragment = node.splitText(start, end)[start ? 1 : 0];
+          const input = $create(TemplateInputNode).setFormat(node.getFormat());
+          fragment.replace(input);
+          input.selectNext();
+          return;
+        }
         const match = getMatch(node.getTextContent());
         if (!match) return;
         const fragment = node.splitText(match.start, match.end)[match.start === 0 ? 0 : 1];
