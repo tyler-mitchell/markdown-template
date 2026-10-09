@@ -1,0 +1,16 @@
+{
+  "service": "Asset API",
+  "version": "2.1.0-preview",
+  "summary": "Preview upload progress updates before shipping.",
+  "deployment": {
+    "kind": "local",
+    "directory": "../asset-api",
+    "command": "vp dev --host 127.0.0.1"
+  },
+  "changes": ["Show uploaded bytes alongside the percentage."],
+  "rollback": "Stop the preview and return to the current release.",
+  "contact": {
+    "name": "Mira Patel",
+    "email": "platform@example.com"
+  }
+}

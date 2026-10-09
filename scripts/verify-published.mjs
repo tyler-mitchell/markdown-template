@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { type } from "arktype";
-import { compile } from "markdown-template";
+import { compile, type as documentType } from "markdown-template";
 
 assert.equal(compile("# Hello {{name}}").render({ name: "World" }), "# Hello World");
 
@@ -14,6 +14,24 @@ Timeout: {{timeoutMs}}`);
 
 assert.equal(document.render({}), "Timeout: 5000");
 assert.equal(document.input.props[0].value.meta.description, "Maximum request duration.");
+
+const defaults = compile("Request timeout: {{ timeoutMs }} ms.", {
+  schema: documentType.module({
+    Settings: {
+      timeoutMs: [
+        "number > 0",
+        "@",
+        { default: 5000, description: "Maximum request duration in milliseconds." },
+      ],
+    },
+  }),
+  input: "Settings",
+});
+assert.equal(defaults.render(), "Request timeout: 5000 ms.");
+assert.equal(
+  defaults.input.out.get("timeoutMs").meta.description,
+  "Maximum request duration in milliseconds.",
+);
 
 const schema = type.module({
   Retry: {

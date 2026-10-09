@@ -1,0 +1,36 @@
+{
+  "name": "@markdown-template/editor",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "scripts": {
+    "check": "tsc --noEmit",
+    "test": "vp test"
+  },
+  "peerDependencies": {
+    "markdown-template": "workspace:*",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "typescript": "^7.0.2",
+    "vite-plus": "^1.1.0"
+  },
+  "dependencies": {
+    "@lexical/code": "^0.52.0",
+    "@lexical/extension": "^0.52.0",
+    "@lexical/headless": "^0.52.0",
+    "@lexical/history": "^0.52.0",
+    "@lexical/link": "^0.52.0",
+    "@lexical/list": "^0.52.0",
+    "@lexical/markdown": "^0.52.0",
+    "@lexical/react": "^0.52.0",
+    "@lexical/rich-text": "^0.52.0",
+    "lexical": "^0.52.0"
+  }
+}

@@ -1,7 +1,12 @@
+packages:
+  - examples
+  - example
+  - packages/*
 allowBuilds:
   esbuild: true
   msgpackr-extract: false
 overrides:
+  "cmd-mesh>arktype": 2.2.7
   "@effect/platform-node@4.0.0-rc.112>@effect/platform-node-shared": 4.0.0-rc.112
 patchedDependencies:
   arktype@2.2.7: patches/arktype@2.2.7.patch

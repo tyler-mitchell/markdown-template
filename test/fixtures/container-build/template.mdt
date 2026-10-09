@@ -1,0 +1,18 @@
+---
+title: Container build step
+schema:
+  Build:
+    service: string
+    image: string
+input: Build
+---
+# Container build: {{ service }}
+
+Add this step after source checkout in GitHub Actions:
+
+```yaml
+- name: Build {{ service }}
+  run: docker build --tag "{{ image }}:$\{{ github.sha }}" .
+```
+
+GitHub Actions resolves `$\{{ github.sha }}` when the job runs.

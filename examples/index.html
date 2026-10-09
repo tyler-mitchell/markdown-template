@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Release notice · Markdown Template</title>
+  </head>
+  <body>
+    <header>
+      <h1>Release notice</h1>
+      <p>One Markdown template. Different release details. A live document preview.</p>
+    </header>
+    <main>
+      <section>
+        <h2>Template</h2>
+        <pre id="template"></pre>
+      </section>
+      <section>
+        <h2><label for="input">Release details</label></h2>
+        <textarea id="input" spellcheck="false" aria-describedby="errors"></textarea>
+        <pre id="errors" role="status"></pre>
+      </section>
+      <section>
+        <h2>Preview</h2>
+        <article id="preview"></article>
+        <details>
+          <summary>Generated Markdown</summary>
+          <pre id="markdown"></pre>
+        </details>
+      </section>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

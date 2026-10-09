@@ -9,13 +9,21 @@
   },
   "files": [
     "dist",
+    "docs",
     "README.md",
     "LICENSE"
   ],
   "type": "module",
   "sideEffects": false,
+  "bin": {
+    "markdown-template": "./dist/cli.mjs"
+  },
   "exports": {
     ".": {
+      "browser": {
+        "types": "./dist/core/index.d.mts",
+        "import": "./dist/core/index.mjs"
+      },
       "types": "./dist/index.d.mts",
       "import": "./dist/index.mjs"
     }
@@ -24,9 +32,11 @@
     "access": "public"
   },
   "scripts": {
+    "mdt": "tsx src/cli.ts",
+    "docs:build": "pnpm mdt render",
     "check": "vp check && vp test",
     "test": "vp test",
-    "demo": "tsx examples/grammar.ts",
+    "demo": "pnpm --dir examples dev",
     "build": "vp pack",
     "prepack": "pnpm run build",
     "dependencies:close": "gh pr close",
@@ -67,17 +77,20 @@
     "workflow:check": "go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12 .github/workflows/*.yml"
   },
   "dependencies": {
+    "@ark/util": "0.56.6",
     "arktype": "2.2.7",
-    "gray-matter": "^4.0.3",
+    "c12": "4.0.0-rc.2",
+    "cmd-mesh": "^0.5.0",
+    "front-matter": "^4.0.2",
     "markdown-it": "^15.0.2",
     "monogram": "github:johnsoncodehk/monogram#8c489e29e000fbfd886fb89ecf2cfcc94bde38b6",
-    "package-management": "0.1.0"
+    "package-management": "0.2.0",
+    "tinyglobby": "^0.2.17"
   },
   "devDependencies": {
     "@arethetypeswrong/core": "^0.18.5",
     "@types/node": "^26.6.4",
     "@varlock/bumpy": "1.18.1",
-    "cmd-mesh": "^0.5.0",
     "fledgling": "1.2.1",
     "npm": "^11.21.0",
     "publint": "^0.3.25",

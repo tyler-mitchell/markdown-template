@@ -1,0 +1,20 @@
+{
+  "service": "Asset API",
+  "version": "2.0.0",
+  "summary": "Adds resumable uploads and clearer failure reports.",
+  "deployment": {
+    "kind": "hosted",
+    "url": "https://assets.example.com",
+    "healthUrl": "https://assets.example.com/health"
+  },
+  "changes": [
+    "Resume an interrupted upload without starting over.",
+    "Include a request ID in every upload error."
+  ],
+  "migration": "Rename Helm chart setting `{{ .Values.assets.host }}` to `{{ .Values.storage.host }}` before rollout.",
+  "rollback": "Redeploy `1.8.3` and restore the previous Helm values.",
+  "contact": {
+    "name": "Mira Patel",
+    "email": "platform@example.com"
+  }
+}

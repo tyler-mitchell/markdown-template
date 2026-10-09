@@ -1,0 +1,14 @@
+{
+  "service": "Asset API",
+  "version": "2.0.0",
+  "changes": [
+    {
+      "title": "Resumable uploads",
+      "description": "Continue an interrupted upload without starting over."
+    },
+    {
+      "title": "Clearer error reports",
+      "description": "Use the request ID to find the failed upload."
+    }
+  ]
+}

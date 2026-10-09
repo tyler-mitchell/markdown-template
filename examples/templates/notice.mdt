@@ -1,0 +1,18 @@
+---
+schema:
+  Change:
+    title: string
+    description: string
+  Notice:
+    service: string
+    version: string
+    changes: Change[]
+input: Notice
+---
+# {{ service }} {{ version }}
+
+This release includes:
+
+<$each items={changes} as="change">
+  - **{{ change.title }}**: {{ change.description }}
+</$each>

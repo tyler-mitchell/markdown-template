@@ -1,0 +1,79 @@
+---
+title: Release handoff
+description: Give the next operator the changes, verification steps, rollback, and owner.
+schema:
+  Hosted:
+    kind: "'hosted'"
+    url: string.url
+    healthUrl: string.url
+  Local:
+    kind: "'local'"
+    directory: string
+    command: string
+  Contact:
+    name: string
+    email: string.email
+  Handoff:
+    service: string
+    version: string
+    summary: string
+    deployment: Hosted | Local
+    changes: string[]
+    migration?: string
+    timeoutSeconds:
+      - number > 0
+      - "@"
+      - default: 10
+        description: Stop waiting for the health check after this many seconds.
+    rollback: string
+    contact: Contact
+input: Handoff
+---
+# {{ service }} {{ version }} — {{ $frontmatter.title }}
+
+{{ summary }}
+
+**Owner:** {{ contact.name }}<$show if={migration}> · **Migration required**</$show>
+
+## Changes ({{ changes.length }})
+
+<$each items={changes} as="change">
+  - {{ change }}
+</$each>
+
+<$show if={migration}>
+  ## Before upgrading
+
+  {{ migration }}
+</$show>
+
+## Verification
+
+<$match value={deployment}>
+  <$case type="Hosted">
+    Open [{{ service }}]({{ deployment.url }}), then check readiness:
+
+    ```sh
+    curl --fail --max-time {{ timeoutSeconds }} "{{ deployment.healthUrl }}"
+    ```
+
+    **Timeout:** {{ timeoutSeconds }} seconds.
+    {{ $schema.Handoff.out.get("timeoutSeconds").meta.description }}
+  </$case>
+  <$case type="Local">
+    Start the preview from `{{ deployment.directory }}`:
+
+    ```sh
+    cd "{{ deployment.directory }}"
+    {{ deployment.command }}
+    ```
+
+    Verify the changes above before publishing.
+  </$case>
+</$match>
+
+## Rollback
+
+{{ rollback }}
+
+<$include src="./shared/release-support.mdt" with={{serviceName: service, contact: contact}} />
