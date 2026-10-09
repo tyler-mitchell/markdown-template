@@ -6,6 +6,7 @@
     "allowImportingTsExtensions": true,
     "allowArbitraryExtensions": true,
     "paths": {
+      "#arktype": ["./node_modules/arktype"],
       "markdown-template": ["./src/index.ts"]
     },
     "verbatimModuleSyntax": true,

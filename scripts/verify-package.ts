@@ -41,8 +41,8 @@ try {
   await run("npm", ["install", tarball, "--no-audit", "--no-fund"], { cwd: directory });
   await copyFile(new URL("./verify-published.mjs", import.meta.url), join(directory, "probe.mjs"));
   await run(process.execPath, ["probe.mjs"], { cwd: directory });
-  await copyFile(new URL("../examples/templates/notice.mdt", import.meta.url), join(directory, "notice.mdt"));
-  await copyFile(new URL("../examples/data/release.json", import.meta.url), join(directory, "release.json"));
+  await copyFile(new URL("../example/templates/notice.mdt", import.meta.url), join(directory, "notice.mdt"));
+  await copyFile(new URL("../example/data/release.json", import.meta.url), join(directory, "release.json"));
   const executable = join(directory, "node_modules/.bin/markdown-template");
   await run(executable, ["typegen"], { cwd: directory });
   await run(executable, [
@@ -50,7 +50,7 @@ try {
   ], { cwd: directory });
   assert.equal(
     await readFile(join(directory, "notice.actual.md"), "utf8"),
-    await readFile(new URL("../examples/output/notice.expected.md", import.meta.url), "utf8"),
+    await readFile(new URL("../example/output/notice.expected.md", import.meta.url), "utf8"),
   );
   await copyFile(
     new URL("./verify-published-types.ts", import.meta.url),

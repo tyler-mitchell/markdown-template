@@ -4,7 +4,6 @@ node_modules/
 dist/
 coverage/
 test/fixtures/**/*.actual.md
-examples/**/*.actual.md
 example/**/*.actual.md
 .tanstack/
 .output/

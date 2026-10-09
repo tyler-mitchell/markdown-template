@@ -4,7 +4,7 @@ The compiler can render a document entirely in the browser.
 The Vite plugin loads `.mdt` imports and their included files during development and builds.
 
 This guide assumes an existing Vite application.
-The [example app](../examples/) contains a complete consumer with its own `package.json`.
+The [example app](../example/) contains a complete consumer with its own `package.json`.
 
 ## Add the plugin
 

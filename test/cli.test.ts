@@ -4,10 +4,19 @@ import { commands, load } from "../src/index.ts";
 
 const fs = defineFileSystemStorage({ base: getPath(["<cwd>", "test/fixtures"]) });
 
+test("discovers and renders a document without a configuration file", async () => {
+  const cwd = fs.getFilePath("cli-project/sales");
+  expect(await commands.list({ cwd })).toEqual(["notice.mdt"]);
+  const [result] = await commands.render({ cwd, file: "notice.mdt" });
+  expect(result.markdown).toBe("The release notes are ready for review.\n");
+});
+
 test("discovers documents and renders configured jobs from another working directory", async () => {
   const cwd = fs.getFilePath("cli-project");
   expect(await commands.list({ cwd })).toEqual([
-    "operations/notice.mdt", "operations/retry.mdt", "sales/notice.mdt",
+    "operations/notice.mdt",
+    "operations/retry.mdt",
+    "sales/notice.mdt",
   ]);
   const results = await commands.render({ cwd });
   expect(results.map(({ output }) => output)).toEqual([
@@ -53,9 +62,11 @@ test("inspects native schema metadata and reports invalid arguments through ArkT
   const notice = await load({ file: fs.getFilePath("cli-project/operations/notice.mdt") });
   expect(details.input).toEqual(notice.input!.in.json);
   expect(details.output).toEqual(notice.input!.out.json);
-  await expect(commands.render({
-    cwd,
-    file: "operations/notice.mdt",
-    input: "invalid.json",
-  })).rejects.toThrow(/service/);
+  await expect(
+    commands.render({
+      cwd,
+      file: "operations/notice.mdt",
+      input: "invalid.json",
+    }),
+  ).rejects.toThrow(/service/);
 });

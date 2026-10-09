@@ -6,8 +6,21 @@ type Schemas = ReturnType<typeof type.module<{
     "description": "string"
   },
   "Notice": {
-    "service": "string",
-    "version": "string",
+    "service": [
+      "string",
+      "@",
+      {
+        "description": "The service this notice is about."
+      }
+    ],
+    "version": [
+      "string",
+      "@",
+      {
+        "default": "Unreleased",
+        "description": "The release version or label."
+      }
+    ],
     "changes": "Change[]"
   }
 }>>;

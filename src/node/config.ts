@@ -36,12 +36,16 @@ export async function loadProject(options: { cwd?: string; config?: string } = {
     globalRc: false,
     packageJson: false,
   });
-  const cwd = resolved.configFile
-    ? getPath({ to: "<current_folder>", from: resolved.configFile })
+  const cwd = resolved._configFile
+    ? getPath({ to: "<current_folder>", from: resolved._configFile })
     : resolved.cwd!;
   const files = await glob(resolved.config.include ?? ["**/*.mdt"], {
     cwd,
     ignore: ["**/node_modules/**", "**/dist/**", ...(resolved.config.exclude ?? [])],
   });
-  return { config: resolved.config, cwd, files: files.filter(file => file.endsWith(".mdt")).sort() };
+  return {
+    config: resolved.config,
+    cwd,
+    files: files.filter((file) => file.endsWith(".mdt")).sort(),
+  };
 }

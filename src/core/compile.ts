@@ -1,4 +1,4 @@
-import { type, type Module, type Type } from "arktype";
+import { type, type Module, type Type } from "#arktype";
 import { getText } from "monogram/src/gen-parser.ts";
 import { evaluate, type Scope } from "./expression.ts";
 import { markdown, parse, type Element, type Part, type Syntax } from "./parse.ts";

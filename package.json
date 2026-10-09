@@ -14,6 +14,12 @@
     "LICENSE"
   ],
   "type": "module",
+  "imports": {
+    "#arktype": {
+      "types": "./dist/vendor/arktype/index.d.ts",
+      "default": "./dist/vendor/arktype/index.js"
+    }
+  },
   "sideEffects": false,
   "bin": {
     "markdown-template": "./dist/cli.mjs"
@@ -36,7 +42,7 @@
     "docs:build": "pnpm mdt render",
     "check": "vp check && vp test",
     "test": "vp test",
-    "demo": "pnpm --dir examples dev",
+    "demo": "vp run build && pnpm --dir example dev",
     "build": "vp pack",
     "prepack": "pnpm run build",
     "dependencies:close": "gh pr close",
@@ -77,8 +83,10 @@
     "workflow:check": "go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12 .github/workflows/*.yml"
   },
   "dependencies": {
+    "@ark/schema": "0.56.6",
     "@ark/util": "0.56.6",
     "arktype": "2.2.7",
+    "arkregex": "0.0.12",
     "c12": "4.0.0-rc.2",
     "cmd-mesh": "^0.5.0",
     "front-matter": "^4.0.2",

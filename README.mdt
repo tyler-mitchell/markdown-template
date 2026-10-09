@@ -10,10 +10,10 @@ This document gives an operator the changes, migration instructions, verificatio
 commands, rollback, and support contact for a release. The same file handles a
 hosted service or a local preview.
 
-[release-handoff.mdt](./examples/templates/release-handoff.mdt):
+[release-handoff.mdt](./example/templates/release-handoff.mdt):
 
 ````mdt
-<$include src="examples/templates/release-handoff.mdt" raw />
+<$include src="example/templates/release-handoff.mdt" raw />
 ````
 
 The schema defines the input contract beside the prose. `Hosted` and `Local`
@@ -23,18 +23,18 @@ warning and the upgrade section. An omitted `timeoutSeconds` defaults to `10`.
 The support section lives in a reusable file, resolved relative to this document.
 It uses the supplied values without needing another schema:
 
-[shared/release-support.mdt](./examples/templates/shared/release-support.mdt):
+[shared/release-support.mdt](./example/templates/shared/release-support.mdt):
 
 ```mdt
-<$include src="examples/templates/shared/release-support.mdt" raw />
+<$include src="example/templates/shared/release-support.mdt" raw />
 ```
 
 ### Supply the release data
 
-[release-handoff.json](./examples/data/release-handoff.json):
+[release-handoff.json](./example/data/release-handoff.json):
 
 ```json
-<$include src="examples/data/release-handoff.json" raw />
+<$include src="example/data/release-handoff.json" raw />
 ```
 
 ### Render it
@@ -55,7 +55,7 @@ The result is ready to paste into an issue, send with a deployment, or display i
 a Markdown viewer:
 
 ````md
-<$include src="examples/output/release-handoff.actual.md" raw />
+<$include src="example/output/release-handoff.actual.md" raw />
 ````
 
 The Helm expressions in the migration instructions survive unchanged. Inserted
@@ -222,7 +222,7 @@ editor are outside the current API.
 ## Working examples
 
 - [Example app](./examples): a browser consumer with its own package and CLI configuration.
-- [Release handoff](./examples/templates/release-handoff.mdt): the complete example above.
+- [Release handoff](./example/templates/release-handoff.mdt): the complete example above.
 - [Service runbook](./test/fixtures/service-runbook/template.mdt): service commands,
   health checks, and reusable escalation instructions.
 - [API integration](./test/fixtures/api-integration/template.mdt): JSON and shell

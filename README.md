@@ -10,7 +10,7 @@ This document gives an operator the changes, migration instructions, verificatio
 commands, rollback, and support contact for a release. The same file handles a
 hosted service or a local preview.
 
-[release-handoff.mdt](./examples/templates/release-handoff.mdt):
+[release-handoff.mdt](./example/templates/release-handoff.mdt):
 
 ````mdt
 ---
@@ -102,7 +102,7 @@ warning and the upgrade section. An omitted `timeoutSeconds` defaults to `10`.
 The support section lives in a reusable file, resolved relative to this document.
 It uses the supplied values without needing another schema:
 
-[shared/release-support.mdt](./examples/templates/shared/release-support.mdt):
+[shared/release-support.mdt](./example/templates/shared/release-support.mdt):
 
 ```mdt
 ## Support
@@ -114,7 +114,7 @@ Include the release version, the failed verification step, and relevant logs.
 
 ### Supply the release data
 
-[release-handoff.json](./examples/data/release-handoff.json):
+[release-handoff.json](./example/data/release-handoff.json):
 
 ```json
 {
@@ -359,7 +359,7 @@ editor are outside the current API.
 ## Working examples
 
 - [Example app](./examples): a browser consumer with its own package and CLI configuration.
-- [Release handoff](./examples/templates/release-handoff.mdt): the complete example above.
+- [Release handoff](./example/templates/release-handoff.mdt): the complete example above.
 - [Service runbook](./test/fixtures/service-runbook/template.mdt): service commands,
   health checks, and reusable escalation instructions.
 - [API integration](./test/fixtures/api-integration/template.mdt): JSON and shell

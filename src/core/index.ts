@@ -1,5 +1,5 @@
 export { compile } from "./compile.ts";
-export { type } from "arktype";
+export { type } from "#arktype";
 export type {
   CompiledDocument,
   CompileOptions,

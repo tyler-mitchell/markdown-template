@@ -1,5 +1,8 @@
 import { compile, type } from "markdown-template";
 
+const request = type({ values: { "[string]": "unknown" } });
+request.assert({ values: { version: "2.0", changes: [] } });
+
 const notice = compile("Request timeout: {{ timeoutMs }} ms.", {
   schema: type.module({
     Settings: {

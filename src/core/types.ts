@@ -1,4 +1,4 @@
-import type { Module, Type } from "arktype";
+import type { Module, Type } from "#arktype";
 
 export type Values = Record<string, unknown>;
 
