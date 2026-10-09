@@ -11,12 +11,13 @@ import {
   TemplateExtension,
   $importDocument,
 } from "@markdown-template/lexical";
-import source from "./release-notice.mdt?raw";
+import source from "./notice.mdt?raw";
 
+const document = compile(source);
 const extension = defineExtension({
   name: "app/release-notice",
   dependencies: [TemplateExtension],
-  $initialEditorState: () => $importDocument(compile(source)),
+  $initialEditorState: () => $importDocument(document),
 });
 
 export function ReleaseNotice() {
@@ -29,6 +30,8 @@ selection, editing transactions, and undo history.
 
 Text, expressions, and directive lines are editable in the document.
 Markdown shortcuts provide headings, lists, and inline formatting.
+Typed and pasted template syntax uses the compiler's source boundaries.
+Incomplete syntax stays editable; inline code keeps Lexical's normal handling.
 
 Export source inside a Lexical read:
 
@@ -41,6 +44,31 @@ const markdown = compile(source).render(releaseData);
 
 `$exportDocument` returns the template, including frontmatter and expressions.
 Rendering with values is a separate operation.
+
+## Source ownership
+
+`$initialEditorState` imports the starting document once. During editing,
+Lexical owns the draft and selection. The host exports source from update
+listeners and recompiles it for validation or preview.
+
+For an explicit update from a file or agent, use the same editor. React hosts
+obtain it through `useLexicalComposerContext`.
+
+```ts
+import { HISTORY_PUSH_TAG, SKIP_DOM_SELECTION_TAG } from "lexical";
+import { compile } from "markdown-template";
+import { $importDocument } from "@markdown-template/lexical";
+
+const updatedSource = document.source.replace("This release includes:", "Ready for your team:");
+const updated = compile(updatedSource, { includes: document.includes });
+editor.update(() => $importDocument(updated), {
+  tag: [HISTORY_PUSH_TAG, SKIP_DOM_SELECTION_TAG],
+});
+```
+
+This replaces the draft in one undo step without moving browser focus.
+The host decides when to apply it. Do not re-import source after every keystroke.
+The example's `TemplateEditor` calls its starting value `initialDocument`.
 
 Lexical normalizes Markdown formatting, including list indentation. Frontmatter
 and template expressions remain source text.

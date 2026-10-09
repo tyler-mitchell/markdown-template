@@ -6,23 +6,16 @@ export const frontmatterState = createState("frontmatter", {
   parse: (value) => (typeof value === "string" ? value : ""),
 });
 
-/** An interpolation retained during Markdown conversion. */
-export class TemplateExpressionNode extends TextNode {
+/** Authored template syntax, editable without Markdown escaping. */
+export class TemplateSourceNode extends TextNode {
   $config() {
-    return this.config("mdt-expression", { extends: TextNode });
+    return this.config("mdt-source", { extends: TextNode });
   }
 
   createDOM(config: EditorConfig) {
     const element = super.createDOM(config);
-    element.classList.add("mdt-template-expression");
+    element.classList.add("mdt-template-source");
     return element;
-  }
-}
-
-/** Source retained for literal escapes and inline directives. */
-export class TemplateSourceNode extends TextNode {
-  $config() {
-    return this.config("mdt-source", { extends: TextNode });
   }
 }
 

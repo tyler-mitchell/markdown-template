@@ -1,15 +1,10 @@
 import { buildEditorFromExtensions } from "@lexical/extension";
 import { HeadlessExtension } from "@lexical/headless";
-import { $getRoot } from "lexical";
-import { compile } from "markdown-template";
+import { $getRoot, $getSelection } from "lexical";
+import { compile, TemplateSyntaxError } from "markdown-template";
 import { expect, test } from "vite-plus/test";
 import MarkdownIt from "markdown-it";
-import {
-  TemplateExtension,
-  $exportDocument,
-  $importDocument,
-  TemplateExpressionNode,
-} from "../src";
+import { TemplateExtension, $exportDocument, $importDocument, TemplateSourceNode } from "../src";
 import escalation from "../../../test/fixtures/support-escalation/template.mdt?raw";
 import escalationInput from "../../../test/fixtures/support-escalation/structured-steps.input.json";
 import escalationExpected from "../../../test/fixtures/support-escalation/structured-steps.expected.md?raw";
@@ -79,7 +74,9 @@ test("edits a release introduction while retaining its schema and repeated chang
     editor.read(() =>
       $getRoot()
         .getAllTextNodes()
-        .filter((node) => node instanceof TemplateExpressionNode)
+        .filter(
+          (node) => node instanceof TemplateSourceNode && node.getTextContent().startsWith("{{"),
+        )
         .map((node) => node.getTextContent()),
     ),
   ).toEqual(["{{ version }}", "{{ change.title }}", "{{ change.description }}"]);
@@ -108,8 +105,7 @@ test("edits an interpolation in place through a Lexical text selection", () => {
       const version = $getRoot()
         .getAllTextNodes()
         .find(
-          (node) =>
-            node instanceof TemplateExpressionNode && node.getTextContent() === "{{ version }}",
+          (node) => node instanceof TemplateSourceNode && node.getTextContent() === "{{ version }}",
         )!;
       version.select(3, 10).insertText("version.toUpperCase()");
     },
@@ -256,6 +252,92 @@ Release identifier: \`{{ release_name }}\`.
   expect(exported).toBe(source);
   expect(compile(exported).render({ release_name: "Asset API 2.4", ready: true })).toBe(
     "**Asset API 2.4** — **Ready for review**.\n\nRelease identifier: `Asset API 2.4`.\n",
+  );
+  editor.dispose();
+});
+
+test.each(["insertText", "insertRawText"] as const)(
+  "%s adds a schema reference to ordinary document text",
+  (method) => {
+    const source = `---
+schema:
+  Release:
+    release_name: string
+input: Release
+---
+Release: draft
+`;
+    const editor = buildEditorFromExtensions(HeadlessExtension, TemplateExtension);
+    editor.update(() => $importDocument(compile(source)), { discrete: true });
+    editor.update(
+      () => {
+        const text = $getRoot().getAllTextNodes()[0];
+        text.select(9, 14)[method]("{{ release_name }}");
+      },
+      { discrete: true },
+    );
+    const exported = editor.read($exportDocument);
+    expect(exported).toBe(source.replace("draft", "{{ release_name }}"));
+    expect(compile(exported).render({ release_name: "Asset API 2.4" })).toBe(
+      "Release: Asset API 2.4\n",
+    );
+    editor.dispose();
+  },
+);
+
+test("keeps an incomplete schema reference editable until typing completes it", () => {
+  const source = `---
+schema:
+  Release:
+    release_name: string
+input: Release
+---
+Release: draft
+`;
+  const editor = buildEditorFromExtensions(HeadlessExtension, TemplateExtension);
+  editor.update(() => $importDocument(compile(source)), { discrete: true });
+  editor.update(
+    () => {
+      $getRoot().getAllTextNodes()[0].select(9, 14).insertText("{{ release_");
+    },
+    { discrete: true },
+  );
+  expect(editor.read($exportDocument)).toBe(source.replace("draft", "{{ release_"));
+  expect(() => compile(editor.read($exportDocument))).toThrow(TemplateSyntaxError);
+  editor.update(
+    () => {
+      $getSelection()!.insertText("name }} / {{ release_name.toUpperCase() }}");
+    },
+    { discrete: true },
+  );
+  expect(compile(editor.read($exportDocument)).render({ release_name: "Asset API 2.4" })).toBe(
+    "Release: Asset API 2.4 / ASSET API 2.4\n",
+  );
+  editor.dispose();
+});
+
+test("pastes a conditional review status without escaping its Markdown", () => {
+  const source = `---
+schema:
+  Review:
+    ready: boolean
+input: Review
+---
+Review status: draft
+`;
+  const editor = buildEditorFromExtensions(HeadlessExtension, TemplateExtension);
+  editor.update(() => $importDocument(compile(source)), { discrete: true });
+  editor.update(
+    () => {
+      $getRoot()
+        .getAllTextNodes()[0]
+        .select(15, 20)
+        .insertRawText("<$show if={ready}>**Ready for review**</$show>");
+    },
+    { discrete: true },
+  );
+  expect(compile(editor.read($exportDocument)).render({ ready: true })).toBe(
+    "Review status: **Ready for review**\n",
   );
   editor.dispose();
 });

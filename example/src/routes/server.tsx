@@ -72,7 +72,7 @@ function ServerPage() {
         </div>
         <div className="grid gap-6 md:grid-cols-2">
           <section aria-label="Template" className="rounded-lg border">
-            <TemplateEditor document={document} editable={false} />
+            <TemplateEditor initialDocument={document} editable={false} />
           </section>
           <section aria-label="Server result" className="rounded-lg border">
             {render.data ? (

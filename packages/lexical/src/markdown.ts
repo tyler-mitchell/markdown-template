@@ -12,7 +12,6 @@ import {
   indentState,
   TemplateBlockNode,
   TemplateBodyNode,
-  TemplateExpressionNode,
   TemplateSourceNode,
 } from "./nodes";
 
@@ -41,11 +40,10 @@ const templateExport: Transformer[] = [
   },
   {
     type: "text-match",
-    dependencies: [TemplateExpressionNode, TemplateSourceNode],
+    dependencies: [TemplateSourceNode],
     regExp: /$^/,
     export(node, _children, exportFormat) {
-      if (!(node instanceof TemplateExpressionNode || node instanceof TemplateSourceNode))
-        return null;
+      if (!(node instanceof TemplateSourceNode)) return null;
       const source = node.getTextContent();
       // Apply Lexical's formatting without escaping template syntax.
       return node.hasFormat("code")
@@ -96,14 +94,11 @@ function transformers(document: CompiledDocument): Transformer[] {
       }
       return {
         type: "text-match",
-        dependencies: [TemplateExpressionNode, TemplateSourceNode],
+        dependencies: [TemplateSourceNode],
         regExp: new RegExp(RegExp.escape(source)),
         importRegExp: new RegExp(RegExp.escape(source)),
         replace(node) {
-          const replacement =
-            part.kind === "expression"
-              ? $create(TemplateExpressionNode)
-              : $create(TemplateSourceNode);
+          const replacement = $create(TemplateSourceNode);
           node.replace(replacement.setTextContent(source).setFormat(node.getFormat()));
         },
       };

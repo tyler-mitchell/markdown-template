@@ -7,11 +7,11 @@ import { $exportDocument, $importDocument, TemplateExtension } from "@markdown-t
 import type { CompiledDocument } from "markdown-template";
 
 export function TemplateEditor({
-  document,
+  initialDocument,
   onChange,
   editable = true,
 }: {
-  document: CompiledDocument;
+  initialDocument: CompiledDocument;
   onChange?: (source: string) => void;
   editable?: boolean;
 }) {
@@ -20,7 +20,7 @@ export function TemplateEditor({
       name: "example/template-editor",
       dependencies: [TemplateExtension],
       editable,
-      $initialEditorState: () => $importDocument(document),
+      $initialEditorState: () => $importDocument(initialDocument),
     }),
   );
   return (

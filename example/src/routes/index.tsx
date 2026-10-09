@@ -48,10 +48,9 @@ function EditorDocument({
   const result = useMemo(() => {
     try {
       const compiled = compile(draft, { includes: document.includes });
-      return { document: compiled, markdown: compiled.render(JSON.parse(input)), error: undefined };
+      return { markdown: compiled.render(JSON.parse(input)), error: undefined };
     } catch (error) {
       return {
-        document: undefined,
         markdown: undefined,
         error: error instanceof Error ? error.message : String(error),
         source:
@@ -134,7 +133,7 @@ function EditorDocument({
       )}
       <ResizablePanelGroup orientation="horizontal" className="min-h-0 flex-1">
         <ResizablePanel defaultSize="55%" minSize="30%">
-          <TemplateEditor document={document} onChange={setDraft} />
+          <TemplateEditor initialDocument={document} onChange={setDraft} />
         </ResizablePanel>
         {preview && (
           <>
