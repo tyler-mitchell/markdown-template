@@ -4,15 +4,14 @@ import {
   TRANSFORMERS,
   type Transformer,
 } from "@lexical/markdown";
-import { $create, $getRoot, $getState, $setState } from "lexical";
+import { $create, $createParagraphNode, $getRoot, $getState, $setState } from "lexical";
 import MarkdownIt from "markdown-it";
 import { compile, type CompiledDocument } from "markdown-template";
 import {
-  closingState,
   frontmatterState,
   indentState,
-  openingState,
   TemplateBlockNode,
+  TemplateBodyNode,
   TemplateExpressionNode,
   TemplateSourceNode,
 } from "./nodes";
@@ -27,14 +26,17 @@ const templateExport: Transformer[] = [
     replace: () => false,
     export(node) {
       if (!(node instanceof TemplateBlockNode)) return null;
-      const body = $convertToMarkdownString(templateExport, node, true);
       const padding = " ".repeat($getState(node, indentState));
-      return (
-        $getState(node, openingState) +
-        "\n" +
-        body.replace(/^(?=.)/gm, padding) +
-        $getState(node, closingState)
-      );
+      return node
+        .getChildren()
+        .map((child) =>
+          child instanceof TemplateBodyNode
+            ? $convertToMarkdownString(templateExport, child, true)
+                .replace(/^(?=.)/gm, padding)
+                .replace(/\n$/, "")
+            : child.getTextContent(),
+        )
+        .join("\n");
     },
   },
   {
@@ -66,14 +68,24 @@ function transformers(document: CompiledDocument): Transformer[] {
             const candidate = lines.slice(startLineIndex, startLineIndex + length).join("\n");
             if (candidate.trimStart() !== raw.trimStart()) return null;
             const node = $create(TemplateBlockNode);
-            $setState(node, openingState, part.source);
-            $setState(node, closingState, document.content.slice(part.bodyEnd, part.end).trim());
             $setState(node, indentState, part.bodyIndent);
+            const bodyNode = $create(TemplateBodyNode);
+            node.append(
+              $createParagraphNode().append(
+                $create(TemplateSourceNode).setTextContent(part.source),
+              ),
+              bodyNode,
+              $createParagraphNode().append(
+                $create(TemplateSourceNode).setTextContent(
+                  document.content.slice(part.bodyEnd, part.end).trim(),
+                ),
+              ),
+            );
             rootNode.append(node);
             const body = document.content.slice(part.bodyOffset, part.bodyEnd);
             const state = new markdown.block.State(body, markdown, {}, []);
             const content = state.getLines(0, state.lineMax, part.bodyIndent, true);
-            $convertFromMarkdownString(content, transformers(compile(content)), node, true);
+            $convertFromMarkdownString(content, transformers(compile(content)), bodyNode, true);
             return [true, startLineIndex + length - 1];
           },
         };
@@ -88,9 +100,7 @@ function transformers(document: CompiledDocument): Transformer[] {
             part.kind === "expression"
               ? $create(TemplateExpressionNode)
               : $create(TemplateSourceNode);
-          node.replace(
-            replacement.setTextContent(source).setFormat(node.getFormat()).setMode("token"),
-          );
+          node.replace(replacement.setTextContent(source).setFormat(node.getFormat()));
         },
       };
     }),

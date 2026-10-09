@@ -27,6 +27,9 @@ export function ReleaseNotice() {
 The extension reference must stay stable. Lexical owns the editor lifecycle,
 selection, editing transactions, and undo history.
 
+Text, expressions, and directive lines are editable in the document.
+Markdown shortcuts provide headings, lists, and inline formatting.
+
 Export source inside a Lexical read:
 
 ```ts

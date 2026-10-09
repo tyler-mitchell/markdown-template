@@ -1,11 +1,4 @@
-import { $getState, createState, ElementNode, TextNode, type EditorConfig } from "lexical";
-
-export const openingState = createState("opening", {
-  parse: (value) => (typeof value === "string" ? value : ""),
-});
-export const closingState = createState("closing", {
-  parse: (value) => (typeof value === "string" ? value : ""),
-});
+import { createState, ElementNode, TextNode, type EditorConfig } from "lexical";
 export const indentState = createState("indent", {
   parse: (value) => (typeof value === "number" ? value : 0),
 });
@@ -23,14 +16,6 @@ export class TemplateExpressionNode extends TextNode {
     const element = super.createDOM(config);
     element.classList.add("mdt-template-expression");
     return element;
-  }
-
-  getExpression() {
-    return this.getTextContent().slice(2, -2).trim();
-  }
-
-  setExpression(expression: string) {
-    return this.setTextContent(`{{ ${expression} }}`);
   }
 }
 
@@ -50,12 +35,25 @@ export class TemplateBlockNode extends ElementNode {
   createDOM() {
     const element = document.createElement("section");
     element.className = "mdt-template-block";
-    element.dataset.directive = $getState(this, openingState);
     return element;
   }
 
-  updateDOM(_previous: TemplateBlockNode, element: HTMLElement) {
-    element.dataset.directive = $getState(this, openingState);
+  updateDOM() {
+    return false;
+  }
+}
+
+/** Markdown content between a directive's editable opening and closing lines. */
+export class TemplateBodyNode extends ElementNode {
+  $config() {
+    return this.config("mdt-body", { extends: ElementNode });
+  }
+
+  createDOM() {
+    return document.createElement("div");
+  }
+
+  updateDOM() {
     return false;
   }
 }

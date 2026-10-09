@@ -82,7 +82,7 @@ test("retains nested each and match sections in an engineering escalation", () =
   editor.dispose();
 });
 
-test("reflects a host transaction in the exported template without evaluating its expression", () => {
+test("edits an interpolation in place through a Lexical text selection", () => {
   const editor = buildEditorFromExtensions(HeadlessExtension, TemplateExtension);
   editor.update(() => $importDocument(compile(source)), { discrete: true });
   editor.update(
@@ -93,7 +93,7 @@ test("reflects a host transaction in the exported template without evaluating it
           (node) =>
             node instanceof TemplateExpressionNode && node.getTextContent() === "{{ version }}",
         )!;
-      version.setTextContent("{{ version.toUpperCase() }}");
+      version.select(3, 10).insertText("version.toUpperCase()");
     },
     { discrete: true },
   );
@@ -101,6 +101,35 @@ test("reflects a host transaction in the exported template without evaluating it
   expect(edited).toContain("{{ version.toUpperCase() }}");
   expect(compile(edited).render({ version: "2.4-rc1", changes: [] })).toContain(
     "# Release 2.4-RC1",
+  );
+  editor.dispose();
+});
+
+test("edits a repeated section's expression directly in the document", () => {
+  const editor = buildEditorFromExtensions(HeadlessExtension, TemplateExtension);
+  editor.update(() => $importDocument(compile(source)), { discrete: true });
+  editor.update(
+    () => {
+      const opening = $getRoot()
+        .getAllTextNodes()
+        .find((node) => node.getTextContent() === '<$each items={changes} as="change">')!;
+      const start = opening.getTextContent().indexOf("changes");
+      opening.select(start, start + "changes".length).insertText("changes.slice(0, 1)");
+    },
+    { discrete: true },
+  );
+  const edited = editor.read($exportDocument);
+  expect(edited).toContain('<$each items={changes.slice(0, 1)} as="change">');
+  expect(
+    compile(edited).render({
+      version: "2.4",
+      changes: [
+        { title: "Shared drafts", description: "Review changes together." },
+        { title: "Faster uploads", description: "Upload files in parallel." },
+      ],
+    }),
+  ).toBe(
+    "# Release 2.4\n\nThis release includes:\n\n- **Shared drafts**: Review changes together.\n",
   );
   editor.dispose();
 });
