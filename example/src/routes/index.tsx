@@ -1,8 +1,12 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { compile, TemplateSyntaxError } from "markdown-template";
-import source from "../../templates/notice.mdt?raw";
+import notice from "../../templates/notice.mdt";
+import handoff from "../../templates/release-handoff.mdt";
+import deployment from "../../templates/deployment/workflow.mdt";
 import release from "../../data/release.json";
+import handoffData from "../../data/release-handoff.json";
+import deploymentData from "../../data/deployment.json";
 import { TemplateEditor } from "#/components/template-editor";
 import { DocumentPreview } from "#/components/document-preview";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "#/components/ui/resizable";
@@ -11,18 +15,39 @@ import { Popover, PopoverContent, PopoverTrigger } from "#/components/ui/popover
 import { Alert, AlertDescription, AlertTitle } from "#/components/ui/alert";
 import { Textarea } from "#/components/ui/textarea";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "#/components/ui/field";
+import { NativeSelect, NativeSelectOption } from "#/components/ui/native-select";
 
 export const Route = createFileRoute("/")({ ssr: false, component: EditorPage });
 
-const document = compile(source);
+const examples = [
+  { id: "notice", document: notice, values: release },
+  { id: "handoff", document: handoff, values: handoffData },
+  { id: "deployment", document: deployment, values: deploymentData },
+];
 
 function EditorPage() {
-  const [draft, setDraft] = useState(source);
-  const [input, setInput] = useState(JSON.stringify(release, null, 2));
+  const [selected, setSelected] = useState("notice");
+  return examples.map((example) => (
+    <div key={example.id} hidden={selected !== example.id} className="min-h-0 flex-1">
+      <EditorDocument example={example} onSelect={setSelected} />
+    </div>
+  ));
+}
+
+function EditorDocument({
+  example,
+  onSelect,
+}: {
+  example: (typeof examples)[number];
+  onSelect: (id: string) => void;
+}) {
+  const { document } = example;
+  const [draft, setDraft] = useState(document.source);
+  const [input, setInput] = useState(JSON.stringify(example.values, null, 2));
   const [preview, setPreview] = useState(false);
   const result = useMemo(() => {
     try {
-      const compiled = compile(draft);
+      const compiled = compile(draft, { includes: document.includes });
       return { document: compiled, markdown: compiled.render(JSON.parse(input)), error: undefined };
     } catch (error) {
       return {
@@ -33,16 +58,24 @@ function EditorPage() {
           error instanceof TemplateSyntaxError ? draft.slice(error.offset, error.end) : undefined,
       };
     }
-  }, [draft, input]);
+  }, [draft, input, document]);
 
   return (
-    <main className="flex min-h-0 flex-1 flex-col">
-      <div className="flex items-center justify-between border-b px-6 py-3">
+    <main className="flex h-full min-h-0 flex-col">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b px-6 py-3">
         <div>
-          <h1 className="font-semibold">Release notice</h1>
-          <p className="text-sm text-muted-foreground">
-            Edit the document. Preview it with your release data.
-          </p>
+          <NativeSelect
+            size="sm"
+            aria-label="Template"
+            value={example.id}
+            onChange={(event) => onSelect(event.target.value)}
+          >
+            {examples.map(({ id, document }) => (
+              <NativeSelectOption key={id} value={id}>
+                {String(document.frontmatter.title)}
+              </NativeSelectOption>
+            ))}
+          </NativeSelect>
         </div>
         <div className="flex items-center gap-2">
           <Popover>
@@ -54,10 +87,10 @@ function EditorPage() {
             <PopoverContent className="w-[min(28rem,calc(100vw-2rem))]" align="end">
               <FieldGroup>
                 <Field>
-                  <FieldLabel htmlFor="release-data">Preview data</FieldLabel>
+                  <FieldLabel htmlFor={`${example.id}-data`}>Preview data</FieldLabel>
                   <FieldDescription>Checked against this template’s schema.</FieldDescription>
                   <Textarea
-                    id="release-data"
+                    id={`${example.id}-data`}
                     value={input}
                     onChange={(event) => setInput(event.target.value)}
                     className="min-h-64 font-mono text-sm"

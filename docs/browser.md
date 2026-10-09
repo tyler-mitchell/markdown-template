@@ -42,6 +42,21 @@ The imported value is a compiled document.
 It has the same `render`, `standard`, `schemas`, and source properties as `compile`.
 Rendering needs no server request.
 
+When editing an imported document, retain its resolved includes:
+
+```ts
+import { compile } from "markdown-template";
+import notice from "./notice.mdt";
+import release from "./release.json";
+
+const updatedSource = notice.source.replace("This release includes:", "Ready for your team:");
+const edited = compile(updatedSource, { includes: notice.includes });
+const markdown = edited.render(release);
+```
+
+The editor supplies the changed source. Vite has already loaded the referenced
+templates and raw files; recompilation reuses those values in the browser.
+
 ## Give TypeScript the document's argument types
 
 Add `markdown-template.config.json`:
@@ -81,8 +96,7 @@ Enable arbitrary file extensions in `tsconfig.json`:
 {
   "compilerOptions": {
     "moduleResolution": "Bundler",
-    "allowArbitraryExtensions": true,
-    "customConditions": ["browser"]
+    "allowArbitraryExtensions": true
   }
 }
 ```
@@ -141,7 +155,6 @@ Tell TypeScript to resolve those directories together:
   "compilerOptions": {
     "moduleResolution": "Bundler",
     "allowArbitraryExtensions": true,
-    "customConditions": ["browser"],
     "rootDirs": [".", ".generated"]
   },
   "include": ["src", "templates", ".generated"]

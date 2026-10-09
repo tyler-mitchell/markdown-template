@@ -188,6 +188,7 @@ Both `compile` and `load` expose:
 | `contentOffset` | Body's UTF-16 offset within the complete source. |
 | `frontmatter` | Parsed metadata and authored schema definition. |
 | `children` | Template expressions, escapes, and nested elements with source ranges. |
+| `includes` | Resolved documents and raw text, reusable when recompiling edited source. |
 | `schemas` | Native ArkType module. |
 | `input` | Selected native argument type, or `undefined`. |
 | `standard` | Its native Standard Schema interface, or `undefined`. |

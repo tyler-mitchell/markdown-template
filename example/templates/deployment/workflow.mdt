@@ -1,0 +1,26 @@
+---
+title: Deployment instructions
+schema:
+  Workflow:
+    service: string
+input: Workflow
+---
+# {{ service }} deployment
+
+Save this workflow in `.github/workflows/deploy.yml`:
+
+```yaml
+<$include src="deploy.yml" raw />
+```
+
+## Release notice
+
+<$include src="notice.mdt" with={{service: service}} />
+
+## Notice template
+
+The notice above comes from this source:
+
+```mdt
+<$include src="notice.mdt" raw />
+```

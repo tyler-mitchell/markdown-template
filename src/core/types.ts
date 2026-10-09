@@ -50,7 +50,9 @@ export interface CompileOptions<
   /** Argument type export; overrides frontmatter input. */
   input?: Name;
   /** Named documents or literal text resolved by include tags. */
-  includes?: Record<string, string | { readonly source?: string; render(values: Values): string }>;
+  includes?: Readonly<
+    Record<string, string | { readonly source?: string; render(values: Values): string }>
+  >;
 }
 
 export type RenderArguments<Input extends Type<any, any> | undefined> = undefined extends Input
@@ -77,6 +79,8 @@ export interface CompiledDocument<
   readonly children: readonly Part[];
   readonly schemas: Schema;
   readonly input: Input;
+  /** Resolved document and raw-text dependencies, reusable when recompiling source. */
+  readonly includes: NonNullable<CompileOptions["includes"]>;
   /** Native Standard Schema validation and JSON Schema conversion. */
   readonly standard: Input extends Type<any, any> ? Input["~standard"] : undefined;
   /** Validates raw arguments with the selected native schema before rendering. */

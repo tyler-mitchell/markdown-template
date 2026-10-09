@@ -7,9 +7,15 @@ export function markdownTemplate() {
   return {
     name: "vite-plugin-markdown-template",
     transform: {
-      filter: { id: /\.mdt$/ },
+      filter: {
+        id: {
+          include: /\.mdt(?:\?|$)/,
+          exclude: /[?&](?:raw|url)(?:&|$)/,
+        },
+      },
       handler(source: string, id: string) {
-        const parsed = parse({ source, file: id });
+        const [file] = id.split("?");
+        const parsed = parse({ source, file });
         const document = compileDocument(parsed);
         const dependencies = new Map<string, boolean>();
         const pending = [...parsed.children];
@@ -31,7 +37,7 @@ export function markdownTemplate() {
           'import { compile } from "markdown-template";',
           ...includes.map(
             ([src, raw], index) =>
-              `import include${index} from ${JSON.stringify(getPath({ to: ["<current_folder>", src], from: id }) + (raw ? "?raw" : ""))};`,
+              `import include${index} from ${JSON.stringify(getPath({ to: ["<current_folder>", src], from: file }) + (raw ? "?raw" : ""))};`,
           ),
           `export default compile(${JSON.stringify(source)}, { includes: {`,
           ...includes.map(([src], index) => `${JSON.stringify(src)}: include${index},`),

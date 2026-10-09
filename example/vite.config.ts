@@ -1,4 +1,5 @@
 import { defineConfig } from "vite-plus";
+import { markdownTemplate } from "markdown-template";
 
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 
@@ -7,7 +8,7 @@ import tailwindcss from "@tailwindcss/vite";
 
 const config = defineConfig({
   resolve: { tsconfigPaths: true },
-  plugins: [tailwindcss(), tanstackStart(), viteReact()],
+  plugins: [markdownTemplate(), tailwindcss(), tanstackStart(), viteReact()],
 });
 
 export default config;

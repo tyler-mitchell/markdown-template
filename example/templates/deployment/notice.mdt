@@ -1,0 +1,7 @@
+---
+schema:
+  Notice:
+    service: string
+input: Notice
+---
+{{ service }} deploys from the reviewed commit.

@@ -9,6 +9,10 @@ The app has two separate routes:
 - **Server rendering:** a TanStack Start server function loads an MDT file from
   disk, validates submitted data, and returns Markdown.
 
+The editor offers a short notice, a release handoff, and deployment instructions.
+These exercise repeated sections, type matching, shared templates, and raw file
+includes. Switching documents keeps each draft and its undo history.
+
 `templates/` and `data/` hold the actual documents and sample inputs. The app uses
 the public `markdown-template` package entry.
 

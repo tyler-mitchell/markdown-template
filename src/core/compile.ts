@@ -171,6 +171,7 @@ export function compileDocument(
     children: document.children.map(publicPart),
     schemas,
     input,
+    includes,
     standard: input?.["~standard"],
     render(values: Scope = {}) {
       return renderValidated(

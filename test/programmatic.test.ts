@@ -73,6 +73,19 @@ Contact support@example.com for support.
   expect(() =>
     handoff.render({ project: "Orchard help center", supportContact: "not-an-email" }),
   ).toThrow(TraversalError);
+
+  const edited = compile(handoff.source.replace("# {{project}}", "# Handoff: {{project}}"), {
+    schema: handoff.schemas,
+    input: "Handoff",
+    includes: handoff.includes,
+  });
+  expect(edited.includes.support).toBe(support);
+  expect(
+    edited.render({
+      project: "Orchard help center",
+      supportContact: "support@example.com",
+    }),
+  ).toBe("# Handoff: Orchard help center\n\nContact support@example.com for support.\n");
 });
 
 test("preserves a shared module and infers required arguments through reusable options", () => {

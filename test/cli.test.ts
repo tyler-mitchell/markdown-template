@@ -1,8 +1,19 @@
 import { expect, test } from "vite-plus/test";
 import { defineFileSystemStorage, getPath } from "package-management";
-import { commands, load } from "../src/index.ts";
+import { commands, compile, load } from "../src/index.ts";
 
 const fs = defineFileSystemStorage({ base: getPath(["<cwd>", "test/fixtures"]) });
+
+test("recompiles an edited document with its resolved raw and template includes", async () => {
+  const document = await load({ file: fs.getFilePath("workflow-documentation/template.mdt") });
+  const edited = compile(document.source.replace("Save this workflow", "Keep this workflow"), {
+    includes: document.includes,
+  });
+  const input = JSON.parse((await fs.readFile("workflow-documentation/workflow.input.json"))!);
+  const expected = (await fs.readFile("workflow-documentation/workflow.expected.md"))!;
+  expect(edited.render(input)).toBe(expected.replace("Save this workflow", "Keep this workflow"));
+  expect(edited.includes).toBe(document.includes);
+});
 
 test("discovers and renders a document without a configuration file", async () => {
   const cwd = fs.getFilePath("cli-project/sales");
