@@ -69,7 +69,7 @@
     "release:sync": "git pull --ff-only origin release",
     "release:sync:merge": "git pull --no-rebase --no-edit origin release",
     "release:sync:push": "git push origin main",
-    "release:trust-sync": "fledgling sync",
+    "release:trust-sync": "(npm whoami || npm login) && fledgling sync",
     "release:status": "bumpy status --json",
     "release:update": "gh pr update-branch bumpy/version-packages",
     "release:preflight": "node scripts/verify-package.ts",
