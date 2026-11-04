@@ -40,7 +40,7 @@
   "scripts": {
     "mdt": "tsx src/cli.ts",
     "docs:build": "pnpm mdt render",
-    "check": "vp check && vp test",
+    "check": "pnpm run build && vp check && vp test",
     "test": "vp test",
     "demo": "vp run build && pnpm --dir example dev",
     "build": "vp pack",
