@@ -1,21 +1,5 @@
 @source "./**/*.{ts,tsx}";
 
-.mdt-editor {
-  min-height: 100%;
-}
-
-.mdt-editor-content {
-  min-height: 100%;
-  max-width: 48rem;
-  margin-inline: auto;
-  padding: 2.5rem 1.5rem 6rem;
-  outline: none;
-}
-
-.mdt-editor-content p {
-  margin: 0;
-}
-
 .mdt-template-source {
   background: var(--secondary);
   color: var(--secondary-foreground);

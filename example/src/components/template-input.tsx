@@ -1,12 +1,17 @@
 import { createContext, useContext, useMemo, useRef, useState } from "react";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import { $getNodeByKey, SKIP_DOM_SELECTION_TAG } from "lexical";
-import { $createTemplateExpression, TemplateInputNode } from "@markdown-template/lexical";
+import { $getNodeByKey, $getState, SKIP_DOM_SELECTION_TAG } from "lexical";
+import {
+  $cancelTemplateInput,
+  $createTemplateExpression,
+  sourceState,
+  TemplateInputNode,
+} from "@markdown-template/lexical";
 import type { CompiledDocument } from "markdown-template";
 import { Command } from "cmdk";
 import { badgeVariants } from "#/components/ui/badge";
-import { Popover, PopoverAnchor, PopoverContent } from "#/components/ui/popover";
+import { Popover, PopoverContent } from "#/components/ui/popover";
 
 export const TemplateContext = createContext<CompiledDocument | null>(null);
 
@@ -23,7 +28,12 @@ export class ReactTemplateInputNode extends TemplateInputNode {
 function TemplateInput({ nodeKey }: { nodeKey: string }) {
   const [editor] = useLexicalComposerContext();
   const document = useContext(TemplateContext)!;
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(() =>
+    editor.getEditorState().read(() => {
+      const input = $getNodeByKey(nodeKey)!;
+      return $getState(input, sourceState).slice(2, -2).trim();
+    }),
+  );
   const [selected, setSelected] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const options = useMemo(() => {
@@ -52,9 +62,9 @@ function TemplateInput({ nodeKey }: { nodeKey: string }) {
     editor.update(
       () => {
         const input = $getNodeByKey(nodeKey);
-        if (!input) return;
+        if (!(input instanceof TemplateInputNode)) return;
         if (focus) input.selectPrevious();
-        input.remove();
+        $cancelTemplateInput(input);
       },
       { tag: focus ? undefined : SKIP_DOM_SELECTION_TAG },
     );
@@ -76,7 +86,16 @@ function TemplateInput({ nodeKey }: { nodeKey: string }) {
   useHotkey("Escape", () => cancel(true), { target: inputRef });
 
   return (
-    <Popover open>
+    <Popover
+      open
+      onOpenChange={(open, details) => {
+        if (details.reason === "escape-key" || details.event.target === inputRef.current) {
+          details.cancel();
+        } else if (!open) {
+          cancel(false);
+        }
+      }}
+    >
       <Command
         label="Template fields"
         shouldFilter={false}
@@ -84,49 +103,46 @@ function TemplateInput({ nodeKey }: { nodeKey: string }) {
         onValueChange={setSelected}
         className="inline"
       >
-        <PopoverAnchor asChild>
-          <Command.Input
-            ref={inputRef}
-            autoFocus
-            aria-label="Template field"
-            value={query}
-            onValueChange={setQuery}
-            className="mdt-template-input"
-          />
-        </PopoverAnchor>
+        <Command.Input
+          ref={inputRef}
+          autoFocus
+          aria-label="Template field"
+          value={query}
+          onValueChange={setQuery}
+          className="mdt-template-input"
+        />
         <PopoverContent
+          anchor={inputRef}
           align="start"
           className="w-80 p-1"
-          onOpenAutoFocus={(event) => event.preventDefault()}
-          onCloseAutoFocus={(event) => event.preventDefault()}
-          onEscapeKeyDown={(event) => event.preventDefault()}
-          onInteractOutside={(event) => {
-            if (event.target !== inputRef.current) cancel(false);
-          }}
+          initialFocus={false}
+          finalFocus={false}
         >
           <Command.List className="max-h-64 overflow-auto">
             <Command.Empty className="px-3 py-2 text-sm text-muted-foreground">
               No matching fields
             </Command.Empty>
-            {options.map((option) => (
-              <Command.Item
-                key={option.path}
-                value={option.path}
-                onSelect={select}
-                onMouseDown={(event) => event.preventDefault()}
-                className="cursor-pointer rounded-md px-3 py-2 data-[selected=true]:bg-accent"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <span className={badgeVariants({ variant: "secondary" })}>{option.path}</span>
-                  <span className="truncate text-xs text-muted-foreground">
-                    {option.expression}
-                  </span>
-                </div>
-                {option.description && (
-                  <p className="mt-1 text-xs text-muted-foreground">{option.description}</p>
-                )}
-              </Command.Item>
-            ))}
+            <Command.Group>
+              {options.map((option) => (
+                <Command.Item
+                  key={option.path}
+                  value={option.path}
+                  onSelect={select}
+                  onMouseDown={(event) => event.preventDefault()}
+                  className="cursor-pointer rounded-md px-3 py-2 data-[selected=true]:bg-accent"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className={badgeVariants({ variant: "secondary" })}>{option.path}</span>
+                    <span className="truncate text-xs text-muted-foreground">
+                      {option.expression}
+                    </span>
+                  </div>
+                  {option.description && (
+                    <p className="mt-1 text-xs text-muted-foreground">{option.description}</p>
+                  )}
+                </Command.Item>
+              ))}
+            </Command.Group>
           </Command.List>
         </PopoverContent>
       </Command>

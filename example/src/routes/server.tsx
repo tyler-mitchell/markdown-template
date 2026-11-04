@@ -43,11 +43,7 @@ function ServerPage() {
         </header>
         <div className="flex items-center gap-2">
           <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm">
-                Data
-              </Button>
-            </PopoverTrigger>
+            <PopoverTrigger render={<Button variant="outline" size="sm" />}>Data</PopoverTrigger>
             <PopoverContent className="w-[min(28rem,calc(100vw-2rem))]" align="start">
               <FieldGroup>
                 <Field>
