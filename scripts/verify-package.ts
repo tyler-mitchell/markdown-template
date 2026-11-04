@@ -41,13 +41,21 @@ try {
   await run("npm", ["install", tarball, "--no-audit", "--no-fund"], { cwd: directory });
   await copyFile(new URL("./verify-published.mjs", import.meta.url), join(directory, "probe.mjs"));
   await run(process.execPath, ["probe.mjs"], { cwd: directory });
-  await copyFile(new URL("../example/templates/notice.mdt", import.meta.url), join(directory, "notice.mdt"));
-  await copyFile(new URL("../example/data/release.json", import.meta.url), join(directory, "release.json"));
+  await copyFile(
+    new URL("../example/templates/notice.mdt", import.meta.url),
+    join(directory, "notice.mdt"),
+  );
+  await copyFile(
+    new URL("../example/data/release.json", import.meta.url),
+    join(directory, "release.json"),
+  );
   const executable = join(directory, "node_modules/.bin/markdown-template");
   await run(executable, ["typegen"], { cwd: directory });
-  await run(executable, [
-    "render", "notice.mdt", "--input", "release.json", "--output", "notice.actual.md",
-  ], { cwd: directory });
+  await run(
+    executable,
+    ["render", "notice.mdt", "--input", "release.json", "--output", "notice.actual.md"],
+    { cwd: directory },
+  );
   assert.equal(
     await readFile(join(directory, "notice.actual.md"), "utf8"),
     await readFile(new URL("../example/output/notice.expected.md", import.meta.url), "utf8"),
@@ -56,16 +64,19 @@ try {
     new URL("./verify-published-types.ts", import.meta.url),
     join(directory, "types.ts"),
   );
-  await writeFile(join(directory, "tsconfig.json"), JSON.stringify({
-    compilerOptions: {
-      target: "ES2023",
-      module: "NodeNext",
-      strict: true,
-      skipLibCheck: true,
-      noEmit: true,
-    },
-    include: ["types.ts"],
-  }));
+  await writeFile(
+    join(directory, "tsconfig.json"),
+    JSON.stringify({
+      compilerOptions: {
+        target: "ES2023",
+        module: "NodeNext",
+        strict: true,
+        skipLibCheck: true,
+        noEmit: true,
+      },
+      include: ["types.ts"],
+    }),
+  );
   await run(join(workspace, "node_modules/.bin/tsc"), ["--project", directory], { cwd: directory });
 } finally {
   await rm(directory, { recursive: true, force: true });

@@ -7,6 +7,9 @@
     "type": "git",
     "url": "git+https://github.com/tyler-mitchell/markdown-template.git"
   },
+  "bin": {
+    "markdown-template": "./dist/cli.mjs"
+  },
   "files": [
     "dist",
     "docs",
@@ -14,15 +17,12 @@
     "LICENSE"
   ],
   "type": "module",
+  "sideEffects": false,
   "imports": {
     "#arktype": {
       "types": "./dist/vendor/arktype/index.d.ts",
       "default": "./dist/vendor/arktype/index.js"
     }
-  },
-  "sideEffects": false,
-  "bin": {
-    "markdown-template": "./dist/cli.mjs"
   },
   "exports": {
     ".": {
@@ -85,8 +85,8 @@
   "dependencies": {
     "@ark/schema": "0.56.6",
     "@ark/util": "0.56.6",
-    "arktype": "2.2.7",
     "arkregex": "0.0.12",
+    "arktype": "2.2.7",
     "c12": "4.0.0-rc.2",
     "cmd-mesh": "^0.5.0",
     "front-matter": "^4.0.2",

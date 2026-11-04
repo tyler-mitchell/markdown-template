@@ -25,11 +25,11 @@ export async function generateTypes(project: Awaited<ReturnType<typeof loadProje
   }
   const manifest = ".markdown-template/types.json";
   const previous: Record<string, string> = JSON.parse((await fs.readFile(manifest)) ?? "{}");
-  const next = Object.fromEntries(declarations.map(({ output, source }) => [
-    getPath({ to: output, startingFrom: cwd }), source,
-  ]));
+  const next = Object.fromEntries(
+    declarations.map(({ output, source }) => [getPath({ to: output, startingFrom: cwd }), source]),
+  );
   for (const [file, source] of Object.entries(previous)) {
-    if (!(file in next) && await fs.readFile(file) === source) await fs.storage.removeItem(file);
+    if (!(file in next) && (await fs.readFile(file)) === source) await fs.storage.removeItem(file);
   }
   for (const [file, source] of Object.entries(next)) {
     await fs.createFile(file, source);

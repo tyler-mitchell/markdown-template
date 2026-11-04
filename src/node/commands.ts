@@ -60,10 +60,7 @@ export const commands = program({
         input: { type: "string", cli: "--input, -i" },
         output: { type: "string", cli: "--output, -o" },
       },
-      output: [
-        { file: "string", output: "string | undefined", markdown: "string" },
-        "[]",
-      ],
+      output: [{ file: "string", output: "string | undefined", markdown: "string" }, "[]"],
       run: async (input) => {
         const { config, cwd } = await loadProject(input);
         const jobs = input.file
@@ -88,8 +85,7 @@ export const commands = program({
         return results;
       },
       cli: {
-        render: (results) =>
-          results.map(({ output, markdown }) => output ?? markdown).join("\n"),
+        render: (results) => results.map(({ output, markdown }) => output ?? markdown).join("\n"),
       },
     },
   },
