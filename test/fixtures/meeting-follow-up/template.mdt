@@ -26,38 +26,38 @@ schema:
     nextMeeting: ["NextMeeting | null", "@", { default: null }]
 input: FollowUp
 ---
-# {topic} — {date}
+# {{topic}} — {{date}}
 
 ## Attendees
 
 <$each items={participants} as="participant">
-  - {participant}
+  - {{participant}}
 </$each>
 
 ## Decisions
 
 <$each items={decisions} as="decision">
-  - **{decision.summary}** {decision.reason}
+  - **{{decision.summary}}** {{decision.reason}}
 </$each>
 
 ## Action items
 
 <$each items={actions} as="action">
-  - [ ] {action.task} — **{action.owner}**, due {action.due}.
+  - [ ] {{action.task}} — **{{action.owner}}**, due {{action.due}}.
 </$each>
 
 <$show if={blockers.length > 0}>
   ## Blockers
 
   <$each items={blockers} as="blocker">
-    - **{blocker.issue}** {blocker.owner}: {blocker.resolution}
+    - **{{blocker.issue}}** {{blocker.owner}}: {{blocker.resolution}}
   </$each>
 
 </$show>
 <$show if={nextMeeting !== null}>
   ## Next meeting
 
-  {nextMeeting.when}: {nextMeeting.purpose}
+  {{nextMeeting.when}}: {{nextMeeting.purpose}}
 </$show>
 <$show if={nextMeeting === null}>
   No follow-up meeting is scheduled. Track progress against the action items above.

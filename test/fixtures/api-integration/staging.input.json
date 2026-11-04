@@ -1,4 +1,5 @@
 {
+  "$schema": "https://schemas.example.com/event-integration.schema.json",
   "apiBase": "https://events.staging.example.com",
   "workspace": "support-preview"
 }

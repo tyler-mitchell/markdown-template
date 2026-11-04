@@ -24,32 +24,32 @@ schema:
     assumptions: string[]
 input: Quote
 ---
-# Quote {number}
+# Quote {{number}}
 
 | Detail | Value |
 | --- | --- |
-| Supplier | {supplier} |
-| Customer | {customer} |
-| Valid until | {validUntil} |
+| Supplier | {{supplier}} |
+| Customer | {{customer}} |
+| Valid until | {{validUntil}} |
 
 ## Scope and pricing
 
 | Item | Quantity | Unit price | Total |
 | --- | ---: | ---: | ---: |
 <$each items={items} as="item">
-  | {item.description} | {item.quantity} | {item.unitPrice} | {item.total} |
+  | {{item.description}} | {{item.quantity}} | {{item.unitPrice}} | {{item.total}} |
 </$each>
 
-**Total: {total}**
+**Total: {{total}}**
 
 ## Payment
 
 <$match value={payment}>
   <$case type="Invoice">
-    Payment is due within {payment.dueDays} days of the invoice date.
+    Payment is due within {{payment.dueDays}} days of the invoice date.
   </$case>
   <$case type="Prepaid">
-    [Pay securely]({payment.paymentUrl}) to confirm the booking.
+    [Pay securely]({{payment.paymentUrl}}) to confirm the booking.
     Work is scheduled after payment is received.
   </$case>
 </$match>
@@ -58,6 +58,6 @@ input: Quote
   ## Scope assumptions
 
   <$each items={assumptions} as="assumption">
-    - {assumption}
+    - {{assumption}}
   </$each>
 </$show>

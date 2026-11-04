@@ -4,7 +4,7 @@
 
 ## Customer report
 
-The diagnostic pasted {ticket} and <$show if={approved}> literally. Keep that text in the case.
+The diagnostic pasted {{ticket}} and <$show if={approved}> literally. Keep that text in the case.
 
 ## Reproduce
 

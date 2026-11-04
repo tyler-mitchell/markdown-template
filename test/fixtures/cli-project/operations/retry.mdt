@@ -1,0 +1,11 @@
+---
+schema:
+  Decision: "'retry' | 'stop'"
+  Retry:
+    service: string
+    decision: Decision
+    delayMs: string.numeric.parse
+    reason?: string
+input: Retry
+---
+{{ service }}: {{ decision }} after {{ delayMs }} ms.<$show if={reason}> {{ reason }}</$show>

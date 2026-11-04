@@ -1,5 +1,10 @@
+.internal/
 node_modules/
 .vite/
 dist/
 coverage/
 test/fixtures/**/*.actual.md
+example/**/*.actual.md
+.tanstack/
+.output/
+.markdown-template/

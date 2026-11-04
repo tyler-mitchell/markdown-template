@@ -1,0 +1,6 @@
+{
+  "service": "Artifact processor",
+  "decision": "retry",
+  "delayMs": "2500",
+  "reason": "The upstream service is restarting."
+}

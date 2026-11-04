@@ -7,4 +7,4 @@ input: Footer
 ---
 ## Escalation note
 
-Keep {ticket} linked to the {service} incident record.
+Keep {{ticket}} linked to the {{service}} incident record.

@@ -1,0 +1,4 @@
+## Support
+
+Contact [{{ contact.name }}](mailto:{{ contact.email }}) about {{ serviceName }}.
+Include the release version, the failed verification step, and relevant logs.

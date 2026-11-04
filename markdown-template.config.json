@@ -1,0 +1,19 @@
+{
+  "include": ["README.mdt", "example/templates/**/*.mdt"],
+  "render": [
+    {
+      "file": "example/templates/release-handoff.mdt",
+      "input": "example/data/release-handoff.json",
+      "output": "example/output/release-handoff.actual.md"
+    },
+    {
+      "file": "example/templates/release-handoff.mdt",
+      "input": "example/data/local-handoff.json",
+      "output": "example/output/local-handoff.actual.md"
+    },
+    {
+      "file": "README.mdt",
+      "output": "README.md"
+    }
+  ]
+}

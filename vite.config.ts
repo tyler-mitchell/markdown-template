@@ -2,14 +2,37 @@ import { defineConfig } from "vite-plus";
 
 export default defineConfig({
   fmt: {
-    ignorePatterns: ["test/fixtures/**/*.expected.md", "test/fixtures/**/*.actual.md"],
+    ignorePatterns: [
+      "CHANGELOG.md",
+      "README.md",
+      "example/src/routeTree.gen.ts",
+      "test/fixtures/**/*.expected.md",
+      "test/fixtures/**/*.actual.md",
+      "example/**/*.expected.md",
+      "example/**/*.actual.md",
+      "**/*.d.mdt.ts",
+    ],
   },
   pack: {
-    entry: ["src/index.ts"],
+    define: { "process.env.PROF": "false" },
+    treeshake: { moduleSideEffects: [{ test: /^monogram\//, sideEffects: false }] },
+    entry: {
+      index: "src/index.ts",
+      "core/index": "src/core/index.ts",
+      cli: "src/cli.ts",
+    },
     dts: true,
+    copy: [
+      { from: "node_modules/arktype/out", to: "dist/vendor", rename: "arktype" },
+      { from: "node_modules/arktype/LICENSE", to: "dist/vendor", rename: "arktype.LICENSE" },
+    ],
     deps: {
-      alwaysBundle: [/^monogram\//, /^arktype(?:\/|$)/],
-      dts: { neverBundle: [/^monogram\//, /^arktype(?:\/|$)/] },
+      alwaysBundle: [/^monogram\//, /^cmd-mesh$/],
+      neverBundle: ["#arktype"],
+      dts: {
+        alwaysBundle: [/^cmd-mesh$/],
+        neverBundle: ["#arktype", /^monogram\//],
+      },
     },
     publint: true,
     attw: true,

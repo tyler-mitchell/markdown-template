@@ -1,0 +1,243 @@
+# markdown-template
+
+Write reusable Markdown documents with typed inputs, defaults, conditions, and
+shared sections. Keep the document in a `.mdt` file; supply data to produce plain
+Markdown for a person, application, or agent.
+
+## A release handoff, ready to use
+
+This document gives an operator the changes, migration instructions, verification
+commands, rollback, and support contact for a release. The same file handles a
+hosted service or a local preview.
+
+[release-handoff.mdt](./example/templates/release-handoff.mdt):
+
+````mdt
+<$include src="example/templates/release-handoff.mdt" raw />
+````
+
+The schema defines the input contract beside the prose. `Hosted` and `Local`
+select the appropriate instructions. An omitted `migration` removes both the
+warning and the upgrade section. An omitted `timeoutSeconds` defaults to `10`.
+
+The support section lives in a reusable file, resolved relative to this document.
+It uses the supplied values without needing another schema:
+
+[shared/release-support.mdt](./example/templates/shared/release-support.mdt):
+
+```mdt
+<$include src="example/templates/shared/release-support.mdt" raw />
+```
+
+### Supply the release data
+
+[release-handoff.json](./example/data/release-handoff.json):
+
+```json
+<$include src="example/data/release-handoff.json" raw />
+```
+
+### Render it
+
+```sh
+npm install markdown-template
+```
+
+```ts
+import { load } from "markdown-template";
+import release from "./data/release-handoff.json" with { type: "json" };
+
+const handoff = await load({ file: "./templates/release-handoff.mdt" });
+const markdown = handoff.render(release);
+```
+
+The result is ready to paste into an issue, send with a deployment, or display in
+a Markdown viewer:
+
+````md
+<$include src="example/output/release-handoff.actual.md" raw />
+````
+
+The Helm expressions in the migration instructions survive unchanged. Inserted
+values are data, not another template to execute. The renderer does not run the
+shell commands in the document.
+
+## Authoring rules
+
+- `schema` is a static ArkType module definition. References, unions, constraints,
+  and metadata use ArkType's own syntax.
+- `input` names the module export that validates arguments. It need not be named
+  `Input`. Documents without an argument contract can omit both fields.
+- Interpolation uses `\{{ expression }}`. Tag attributes use one pair of braces;
+  an object expression supplies the second pair in an include's `with` attribute.
+- **show** renders its body when the condition is truthy. It works inside
+  sentences and around sections.
+- **each** repeats its body over array items or object values. `as` names the
+  value inside that body.
+- **match** tries cases in authored order. `type` accepts a module name or an
+  inline ArkType expression such as `number > 100`. A **default** branch is optional.
+- **include** renders another document with the current values plus its `with`
+  values. The included document validates its own declared input.
+- `$frontmatter` and `$schema` refer to the current document's metadata and native
+  module. Caller values cannot replace these bindings.
+
+Markdown stays Markdown. Expressions also work inside inline code and fenced
+examples, as the verification command above demonstrates. Construct tags inside
+code blocks stay literal. Inline constructs must close in the same Markdown block.
+Inline includes remove one trailing line ending; block includes preserve it.
+
+### Documenting template syntax
+
+Write `{{ "\\{{ service }}" }}` to emit the literal placeholder `\{{ service }}`.
+For example, this authored template:
+
+```mdt
+This document expects a {{ "\\{{ service }}" }} placeholder.
+```
+
+produces:
+
+```md
+This document expects a \{{ service }} placeholder.
+```
+
+Single braces in JSON, shell variables, and JavaScript objects do not start an
+interpolation. When inserting a complete template as a value, its frontmatter,
+tags, braces, and code fences are copied without another evaluation pass.
+
+The package's native `type` export supports defaults and descriptions together
+in `@` metadata. A module supplied from another ArkType installation keeps that
+installation's semantics.
+
+Authored expressions use JavaScript evaluation. Only execute trusted templates.
+MDT is not a sandbox or a general TypeScript runtime.
+
+## When the schema already lives in your application
+
+Use `compile(source, options)` with a native ArkType module. This release
+announcement reuses application-owned validation and keeps render arguments typed:
+
+```ts
+import { compile, type } from "markdown-template";
+
+const announcement = compile(
+  "Release \{{ version }} is ready for \{{ channel }}.",
+  {
+    schema: type.module({
+      Announcement: {
+        version: "string",
+        channel: [
+          "'email' | 'slack'",
+          "@",
+          { default: "slack", description: "Where to send the announcement." },
+        ],
+      },
+    }),
+    input: "Announcement",
+  },
+);
+
+announcement.render({ version: "2.0.0" });
+// Release 2.0.0 is ready for slack.
+
+announcement.render({ version: "2.0.0", channel: "email" });
+// Release 2.0.0 is ready for email.
+```
+
+The supplied module and selected type retain their identity. `schema` and `input`
+options override frontmatter. `includes` supplies named compiled documents for
+programmatic composition.
+
+Code-defined modules preserve ArkType's input and output inference. Schemas loaded
+from a file or source string are discovered at runtime; their validated output is
+`unknown` to TypeScript. Reading a file does not generate static types.
+
+### Validate a draft before rendering
+
+An editor can validate a proposed release announcement without throwing, display
+native field issues, and preview only valid values:
+
+```ts
+const draft: unknown = { version: "2.0.0", channel: "email" };
+const result = await announcement.standard.validate(draft);
+
+if (result.issues) {
+  console.error(result.issues);
+} else {
+  const preview = announcement.renderValidated(result.value);
+}
+```
+
+`render` accepts raw arguments and applies native validation, defaults, and
+transforms. `renderValidated` accepts native output and does not apply them again.
+This distinction matters for transformations such as strings parsed into numbers
+or seconds converted into milliseconds.
+
+`standard` is the native ArkType `~standard` interface, including JSON Schema
+conversion. `input` is itself Standard Schema-compatible for libraries that accept
+a schema object.
+
+## What a compiled document exposes
+
+Both `compile` and `load` expose:
+
+| Member | Purpose |
+| --- | --- |
+| `source` | Complete authored source, including frontmatter. |
+| `content` | Markdown body without frontmatter. |
+| `contentOffset` | Body's UTF-16 offset within the complete source. |
+| `frontmatter` | Parsed metadata and authored schema definition. |
+| `children` | Template expressions, escapes, and nested elements with source ranges. |
+| `includes` | Resolved documents and raw text, reusable when recompiling edited source. |
+| `schemas` | Native ArkType module. |
+| `input` | Selected native argument type, or `undefined`. |
+| `standard` | Its native Standard Schema interface, or `undefined`. |
+| `render(values)` | Validate raw arguments and produce Markdown. |
+| `renderValidated(values)` | Produce Markdown from already-validated output. |
+
+`load` also returns the resolved `file` path and loads relative includes.
+Rendering does not change source, save input values, or perform application actions.
+For static schemas accepting `{}`, `render()` can omit arguments; other static
+schemas keep them required.
+
+### Contextual controls and source editing
+
+Native fields expose descriptions, defaults, and allowed values for controls
+beside the document. For example, `announcement.input.out.get("channel")` provides
+the channel type; `.select("unit")` exposes its allowed values. Use native
+validation to turn an unknown selection into the field's inferred type.
+
+An argument edit changes a preview. An authored edit changes `source`.
+Public ranges let an editor replace one expression or section while preserving
+unrelated prose, formatting, and metadata. They are half-open UTF-16 offsets into
+`content`; add `contentOffset` to splice the full source. Elements also expose
+`bodyOffset`, `bodyEnd`, and nested `children`.
+
+Recompile after source edits and supply the same programmatic options. Ranges
+belong to that source snapshot. Public nodes do not expose parser trees or
+Markdown tokens.
+
+Rendered-output source maps, incomplete-syntax recovery, and a complete WYSIWYG
+editor are outside the current API.
+
+## Working examples
+
+- [Example app](./examples): a browser consumer with its own package and CLI configuration.
+- [Release handoff](./example/templates/release-handoff.mdt): the complete example above.
+- [Service runbook](./test/fixtures/service-runbook/template.mdt): service commands,
+  health checks, and reusable escalation instructions.
+- [API integration](./test/fixtures/api-integration/template.mdt): JSON and shell
+  snippets with ordinary braces alongside interpolated values.
+- [Programmatic consumers](./test/programmatic.test.ts): inference, defaults,
+  overrides, independent includes, and transformed input.
+- [Standard Schema consumers](./test/standard-schema.test.ts): field issues,
+  JSON Schema, and rendering native validation output.
+- [Editor consumers](./test/editor.test.ts): contextual controls and exact source edits.
+
+This README is rendered from [README.mdt](./README.mdt).
+Run `pnpm docs:build` after editing it or the release-handoff example.
+The root configuration renders the example before it includes that output in the README.
+
+Start with the [documentation](./docs/index.md) for a shorter tutorial.
+
+MIT licensed.

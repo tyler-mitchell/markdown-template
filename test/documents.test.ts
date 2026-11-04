@@ -1,6 +1,6 @@
 import { expect, test } from "vite-plus/test";
 import { defineFileSystemStorage, getPath } from "package-management";
-import { load } from "../src/document.ts";
+import { load } from "../src/index.ts";
 
 const fixtures = defineFileSystemStorage({ base: getPath(["<cwd>", "test/fixtures"]) });
 const cases = (await fixtures.storage.getKeys())
@@ -13,7 +13,6 @@ test.each(cases)("%s", async (key) => {
   const input = JSON.parse((await fixtures.readFile(key))!);
   const document = await load({
     file: getPath({ to: ["<current_folder>", "template.mdt"], from: fixtures.getFilePath(key) }),
-    fileSystemStorage: fixtures,
   });
   const expectedError = await fixtures.readFile(
     key.replace(/\.input\.json$/, ".expected-error.json"),

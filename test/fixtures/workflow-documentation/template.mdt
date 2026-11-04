@@ -1,0 +1,35 @@
+---
+schema:
+  Workflow:
+    service: string
+input: Workflow
+---
+# {{ service }} deployment
+
+Save this workflow in `.github/workflows/deploy.yml`:
+
+```yaml
+<$include src="deploy.yml" raw />
+```
+
+The following directive renders a notice with the supplied service:
+
+```mdt
+\<$include src="notice.mdt" with={{service: service}} />
+```
+
+## Notice source
+
+```mdt
+<$include src="notice.mdt" raw />
+```
+
+## Rendered notice
+
+<$include src="notice.mdt" with={{service: service}} />
+
+A normal include in a code example remains literal:
+
+```mdt
+<$include src="not-loaded.mdt" with={{label: "raw > output"}} />
+```

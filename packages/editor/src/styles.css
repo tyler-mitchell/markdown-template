@@ -1,0 +1,2 @@
+@import "./components/editor/theme.css";
+@source "./**/*.{ts,tsx}";

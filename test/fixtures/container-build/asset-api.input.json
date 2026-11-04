@@ -1,0 +1,4 @@
+{
+  "service": "Asset API",
+  "image": "ghcr.io/acme/asset-api"
+}

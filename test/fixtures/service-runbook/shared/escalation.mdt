@@ -1,13 +1,18 @@
 ---
 schema:
+  Channel:
+    - string
+    - "@"
+    - description: Use this channel for service incidents and failed health checks.
   Escalation:
     serviceName: string
     contact:
       team: string
-      channel: string
+      channel: Channel
 input: Escalation
 ---
 ## Escalation
 
-Contact **{contact.team}** in **{contact.channel}** about {serviceName}.
+Contact **{{contact.team}}** in **{{contact.channel}}** about {{serviceName}}.
+{{$schema.Channel.meta.description}}
 Include the failing check, its response, and the relevant logs.

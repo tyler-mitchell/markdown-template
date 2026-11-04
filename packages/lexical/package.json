@@ -1,0 +1,33 @@
+{
+  "name": "@markdown-template/lexical",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "check": "tsc --noEmit",
+    "test": "vp test"
+  },
+  "dependencies": {
+    "@lexical/code": "^0.52.0",
+    "@lexical/extension": "^0.52.0",
+    "@lexical/history": "^0.52.0",
+    "@lexical/link": "^0.52.0",
+    "@lexical/list": "^0.52.0",
+    "@lexical/markdown": "^0.52.0",
+    "@lexical/rich-text": "^0.52.0",
+    "markdown-it": "^15.0.2"
+  },
+  "devDependencies": {
+    "@lexical/headless": "^0.52.0",
+    "typescript": "^7.0.2",
+    "vite-plus": "^1.1.0"
+  },
+  "peerDependencies": {
+    "lexical": "^0.52.0",
+    "markdown-template": "workspace:*"
+  }
+}

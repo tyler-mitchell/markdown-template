@@ -1,0 +1,17 @@
+---
+title: Deployment notice
+schema:
+  Notice:
+    service: string
+    timeoutMs:
+      - number
+      - "@"
+      - default: 5000
+        description: Maximum request duration.
+input: Notice
+---
+# {{ service }}
+
+Request timeout: {{ timeoutMs }} ms.
+
+<$include src="../shared/contact.mdt" />

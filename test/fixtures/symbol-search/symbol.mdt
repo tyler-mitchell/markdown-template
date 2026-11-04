@@ -1,0 +1,9 @@
+---
+schema:
+  Symbol:
+    symbol:
+      name: string
+      file: string
+input: Symbol
+---
+**{{ symbol.name }}** — `{{ symbol.file }}`

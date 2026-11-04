@@ -1,0 +1,19 @@
+---
+title: Release notice
+schema:
+  Change:
+    title: string
+    description: string
+  Notice:
+    service: ["string", "@", { description: "The service this notice is about." }]
+    version: ["string", "@", { default: "Unreleased", description: "The release version or label." }]
+    changes: Change[]
+input: Notice
+---
+# {{ service }} {{ version }}
+
+This release includes:
+
+<$each items={changes} as="change">
+  - **{{ change.title }}**: {{ change.description }}
+</$each>

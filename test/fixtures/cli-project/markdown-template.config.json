@@ -1,0 +1,10 @@
+{
+  "include": ["operations/*.mdt", "sales/*.mdt"],
+  "render": [
+    {
+      "file": "operations/notice.mdt",
+      "input": "initial.json",
+      "output": "output/notice.actual.md"
+    }
+  ]
+}

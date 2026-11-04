@@ -40,6 +40,7 @@ local commits remain ordinary development actions.
 - Consumer-visible package changes include one maintained Bumpy bump file.
 - Follow `node_modules/@varlock/bumpy/skills/add-change/SKILL.md` for bump level
   and changelog text.
+- Follow `.bumpy/README.md` for consumer-facing explanations and practical examples.
 - Do not create task-specific branches or worktrees.
 
 ## Bump lifecycle

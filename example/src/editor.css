@@ -1,0 +1,37 @@
+@source "./**/*.{ts,tsx}";
+
+.mdt-template-source {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  border-radius: var(--radius-sm);
+  padding: 0.125em 0.35em;
+  font-size: 0.85em;
+  font-weight: 500;
+}
+
+.mdt-template-input {
+  display: inline-block;
+  min-width: 5ch;
+  width: 10ch;
+  field-sizing: content;
+  min-height: 1.2em;
+  padding-inline: 0.35em;
+  border: 1px solid var(--ring);
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  vertical-align: baseline;
+  color: inherit;
+  font: inherit;
+  outline: none;
+}
+
+.mdt-template-block {
+  border-inline-start: 2px solid var(--border);
+  padding-inline-start: 1rem;
+}
+
+.mdt-template-block::before {
+  content: attr(data-label);
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+}

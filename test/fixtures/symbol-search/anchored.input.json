@@ -1,0 +1,8 @@
+{
+  "count": 3,
+  "anchor": "packages/core",
+  "selected": {
+    "name": "renderDocument",
+    "file": "src/document.ts"
+  }
+}
