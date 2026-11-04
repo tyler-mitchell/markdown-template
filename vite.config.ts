@@ -5,6 +5,7 @@ export default defineConfig({
     ignorePatterns: [
       "CHANGELOG.md",
       "README.md",
+      "example/src/routeTree.gen.ts",
       "test/fixtures/**/*.expected.md",
       "test/fixtures/**/*.actual.md",
       "example/**/*.expected.md",
