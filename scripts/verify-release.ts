@@ -21,7 +21,7 @@ try {
   const attempts = 10;
   for (let attempt = 1; ; attempt += 1) {
     try {
-      await run("npm", ["install", spec, "--no-audit", "--no-fund"], {
+      await run("npm", ["install", spec, "arktype@2.2.7", "--no-audit", "--no-fund"], {
         cwd: directory,
       });
       break;
