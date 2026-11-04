@@ -5,6 +5,7 @@ import { compile, TemplateSyntaxError } from "markdown-template";
 import { expect, test } from "vite-plus/test";
 import MarkdownIt from "markdown-it";
 import {
+  MarkdownExtension,
   TemplateExtension,
   $exportDocument,
   $importDocument,
@@ -55,8 +56,24 @@ This release includes:
 </$each>
 `;
 
+test("imports a reading view without turning Markdown separators into empty paragraphs", () => {
+  const editor = buildEditorFromExtensions(HeadlessExtension, MarkdownExtension, TemplateExtension);
+  editor.update(
+    () => $importDocument(compile("# Brief\n\nReference: {{ subject }}\n\nInstructions."), false),
+    { discrete: true },
+  );
+  expect(
+    editor.read(() =>
+      $getRoot()
+        .getChildren()
+        .map((node) => node.getTextContent()),
+    ),
+  ).toEqual(["Brief", "Reference: subject", "Instructions."]);
+  editor.dispose();
+});
+
 test("edits a release introduction while retaining its schema and repeated change list", () => {
-  const editor = buildEditorFromExtensions(HeadlessExtension, TemplateExtension);
+  const editor = buildEditorFromExtensions(HeadlessExtension, MarkdownExtension, TemplateExtension);
   editor.update(() => $importDocument(compile(source)), { discrete: true });
   editor.update(
     () => {
@@ -93,7 +110,7 @@ test("edits a release introduction while retaining its schema and repeated chang
 });
 
 test("retains nested each and match sections in an engineering escalation", () => {
-  const editor = buildEditorFromExtensions(HeadlessExtension, TemplateExtension);
+  const editor = buildEditorFromExtensions(HeadlessExtension, MarkdownExtension, TemplateExtension);
   editor.update(() => $importDocument(compile(escalation)), { discrete: true });
   const source = editor.read($exportDocument);
   const document = compile(source);
@@ -107,7 +124,7 @@ test("retains nested each and match sections in an engineering escalation", () =
 });
 
 test("replaces an interpolation badge in a Lexical transaction", () => {
-  const editor = buildEditorFromExtensions(HeadlessExtension, TemplateExtension);
+  const editor = buildEditorFromExtensions(HeadlessExtension, MarkdownExtension, TemplateExtension);
   editor.update(() => $importDocument(compile(source)), { discrete: true });
   editor.update(
     () => {
@@ -130,7 +147,7 @@ test("replaces an interpolation badge in a Lexical transaction", () => {
 });
 
 test("changes a repeated section while retaining its document content", () => {
-  const editor = buildEditorFromExtensions(HeadlessExtension, TemplateExtension);
+  const editor = buildEditorFromExtensions(HeadlessExtension, MarkdownExtension, TemplateExtension);
   editor.update(() => $importDocument(compile(source)), { discrete: true });
   editor.update(
     () => {
@@ -172,7 +189,7 @@ test.each([
       ? { "./symbol.mdt": compile(fixtureSources[`${prefix}symbol.mdt`]) }
       : undefined;
   const document = compile(source, { includes });
-  const editor = buildEditorFromExtensions(HeadlessExtension, TemplateExtension);
+  const editor = buildEditorFromExtensions(HeadlessExtension, MarkdownExtension, TemplateExtension);
   editor.update(() => $importDocument(document), { discrete: true });
   editor.update(
     () => {
@@ -199,7 +216,7 @@ test("keeps a multiline release label expression when editing its introduction",
     "This release includes:",
     `This release includes:\n\nRelease label: ${expression}`,
   );
-  const editor = buildEditorFromExtensions(HeadlessExtension, TemplateExtension);
+  const editor = buildEditorFromExtensions(HeadlessExtension, MarkdownExtension, TemplateExtension);
   editor.update(() => $importDocument(compile(template)), { discrete: true });
   editor.update(
     () => {
@@ -228,7 +245,7 @@ test("retains raw file includes and literal template examples while editing depl
     "deploy.yml": deploySource,
     "notice.mdt": compile(noticeSource),
   };
-  const editor = buildEditorFromExtensions(HeadlessExtension, TemplateExtension);
+  const editor = buildEditorFromExtensions(HeadlessExtension, MarkdownExtension, TemplateExtension);
   editor.update(() => $importDocument(compile(workflowSource, { includes })), { discrete: true });
   editor.update(
     () => {
@@ -258,7 +275,7 @@ input: Notice
 
 Release identifier: \`{{ release_name }}\`.
 `;
-  const editor = buildEditorFromExtensions(HeadlessExtension, TemplateExtension);
+  const editor = buildEditorFromExtensions(HeadlessExtension, MarkdownExtension, TemplateExtension);
   editor.update(() => $importDocument(compile(source)), { discrete: true });
   const exported = editor.read($exportDocument);
   expect(exported).toBe(source);
@@ -279,7 +296,11 @@ input: Release
 ---
 Release: draft
 `;
-    const editor = buildEditorFromExtensions(HeadlessExtension, TemplateExtension);
+    const editor = buildEditorFromExtensions(
+      HeadlessExtension,
+      MarkdownExtension,
+      TemplateExtension,
+    );
     editor.update(() => $importDocument(compile(source)), { discrete: true });
     editor.update(
       () => {
@@ -306,7 +327,7 @@ input: Release
 ---
 Release: draft
 `;
-  const editor = buildEditorFromExtensions(HeadlessExtension, TemplateExtension);
+  const editor = buildEditorFromExtensions(HeadlessExtension, MarkdownExtension, TemplateExtension);
   editor.update(() => $importDocument(compile(source)), { discrete: true });
   editor.update(
     () => {
@@ -337,7 +358,7 @@ input: Review
 ---
 Review status: draft
 `;
-  const editor = buildEditorFromExtensions(HeadlessExtension, TemplateExtension);
+  const editor = buildEditorFromExtensions(HeadlessExtension, MarkdownExtension, TemplateExtension);
   editor.update(() => $importDocument(compile(source)), { discrete: true });
   editor.update(
     () => {

@@ -14,6 +14,7 @@ import {
   $createTemplateExpression,
   $exportDocument,
   $importDocument,
+  MarkdownExtension,
   TemplateExtension,
 } from "../src";
 
@@ -30,6 +31,7 @@ Ready for review.
 `;
   const editor = buildEditorFromExtensions(
     HeadlessExtension,
+    MarkdownExtension,
     TemplateExtension,
     configExtension(HistoryExtension, { disabled: false }),
   );
@@ -70,6 +72,7 @@ Release: draft
 `;
   const editor = buildEditorFromExtensions(
     HeadlessExtension,
+    MarkdownExtension,
     TemplateExtension,
     configExtension(HistoryExtension, { disabled: false }),
   );
@@ -92,7 +95,11 @@ Release: draft
     "# Asset API\n\nRelease: 2.1\n",
   );
 
-  const restored = buildEditorFromExtensions(HeadlessExtension, TemplateExtension);
+  const restored = buildEditorFromExtensions(
+    HeadlessExtension,
+    MarkdownExtension,
+    TemplateExtension,
+  );
   restored.setEditorState(
     restored.parseEditorState(JSON.stringify(editor.getEditorState().toJSON())),
   );

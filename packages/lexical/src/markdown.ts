@@ -12,6 +12,7 @@ import {
   frontmatterState,
   indentState,
   sourceState,
+  markdownState,
   closingState,
   labelState,
   $createTemplateExpression,
@@ -50,7 +51,7 @@ const templateExport: Transformer[] = [
     dependencies: [TemplateSourceNode, TemplateInputNode],
     regExp: /$^/,
     export(node, _children, exportFormat) {
-      if (node instanceof TemplateInputNode) return "";
+      if (node instanceof TemplateInputNode) return $getState(node, markdownState);
       if (!(node instanceof TemplateSourceNode)) {
         if (!$isTextNode(node) || node.hasFormat("code")) return null;
         const text = node.getTextContent();
@@ -142,9 +143,14 @@ function transformers(document: CompiledDocument): Transformer[] {
 }
 
 /** Imports an MDT document inside a Lexical update. */
-export function $importDocument(document: CompiledDocument) {
+export function $importDocument(document: CompiledDocument, shouldPreserveNewLines = true) {
   $setState($getRoot(), frontmatterState, document.source.slice(0, document.contentOffset));
-  $convertFromMarkdownString(document.content, transformers(document), undefined, true);
+  $convertFromMarkdownString(
+    document.content,
+    transformers(document),
+    undefined,
+    shouldPreserveNewLines,
+  );
 }
 
 /** Exports the authored template; it never evaluates input values. */

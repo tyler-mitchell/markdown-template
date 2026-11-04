@@ -10,15 +10,19 @@ import {
   $createTextNode,
   $getSelection,
   $getState,
+  $getNearestNodeFromDOMNode,
   $isRangeSelection,
   $isTextNode,
   defineExtension,
   mergeRegister,
   TextNode,
+  CLICK_COMMAND,
+  COMMAND_PRIORITY_LOW,
 } from "lexical";
 import { compile } from "markdown-template";
 import {
   $createTemplateExpression,
+  $editTemplateExpression,
   sourceState,
   TemplateBlockNode,
   TemplateBodyNode,
@@ -48,11 +52,22 @@ export const MarkdownExtension = defineExtension({
 /** Native Lexical behavior and nodes for editing MDT documents. */
 export const TemplateExtension = defineExtension({
   name: "@markdown-template/lexical/Template",
-  config: { trigger: "{{" },
-  dependencies: [MarkdownExtension, DecoratorTextExtension],
+  config: { trigger: "{{", expressions: true },
+  dependencies: [DecoratorTextExtension],
   nodes: [TemplateBlockNode, TemplateBodyNode, TemplateSourceNode, TemplateInputNode],
-  register(editor, { trigger }) {
+  register(editor, { trigger, expressions }) {
     return mergeRegister(
+      editor.registerCommand(
+        CLICK_COMMAND,
+        (event) => {
+          const node = $getNearestNodeFromDOMNode(event.target as Node);
+          if (!(node instanceof TemplateSourceNode) || !$getState(node, sourceState)) return false;
+          event.preventDefault();
+          $editTemplateExpression(node);
+          return true;
+        },
+        COMMAND_PRIORITY_LOW,
+      ),
       editor.registerNodeTransform(TextNode, (node) => {
         if (!node.isSimpleText() || node.hasFormat("code") || $isCodeNode(node.getParent())) return;
         const selection = $getSelection();
@@ -71,6 +86,7 @@ export const TemplateExtension = defineExtension({
           input.selectNext();
           return;
         }
+        if (!expressions) return;
         const match = getMatch(node.getTextContent());
         if (!match) return;
         const fragment = node.splitText(match.start, match.end)[match.start === 0 ? 0 : 1];

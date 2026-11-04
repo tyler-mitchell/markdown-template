@@ -9,6 +9,7 @@ import { LexicalExtensionComposer } from "@lexical/react/LexicalExtensionCompose
 import { compile } from "markdown-template";
 import {
   TemplateExtension,
+  MarkdownExtension,
   $importDocument,
 } from "@markdown-template/lexical";
 import source from "./notice.mdt?raw";
@@ -16,7 +17,7 @@ import source from "./notice.mdt?raw";
 const document = compile(source);
 const extension = defineExtension({
   name: "app/release-notice",
-  dependencies: [TemplateExtension],
+  dependencies: [MarkdownExtension, TemplateExtension],
   $initialEditorState: () => $importDocument(document),
 });
 
